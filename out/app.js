@@ -50,17 +50,12 @@ class DeleteOldSessionsTool {
                 "fields": "url,email"
             }
         };
-        // const result = await request.get(options);
-        // let a =   RequestCallback();
-        // a.
         var req = request.post("https://" + endpoint + "/api/1/search/", options, function (error, response, body) {
             console.log("------");
-            // console.dir(err);
-            // console.dir(response);
-            body = JSON.parse(body);
-            console.log(body);
+            body = JSON.parse(body.toString());
+            // console.log(body);
             console.dir(body.total_count);
-            console.dir(body.sessions);
+            // console.dir(body.sessions);
             for (let session of body.sessions) {
                 console.dir(session);
             }

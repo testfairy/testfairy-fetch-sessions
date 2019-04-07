@@ -66,10 +66,10 @@ class DeleteOldSessionsTool {
 
 			console.log("------");
 
-			body = JSON.parse(body);
-			console.log(body);
+			body = JSON.parse(body.toString());
+			// console.log(body);
 			console.dir(body.total_count);
-			console.dir(body.sessions);
+			// console.dir(body.sessions);
 
 			for ( let session of body.sessions) {
 				console.dir(session);
