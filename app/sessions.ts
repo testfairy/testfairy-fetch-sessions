@@ -20,11 +20,24 @@ export class Sessions {
 		this.getSessions((error:any, res:any, body:any) => this.getLogForSessions(error, res, body));
 	}
 
+	screenshots() {
+
+		this.getSessions((error:any, res:any, body:any) => this.getScreenshotsForSessions(error, res, body));
+	}
+
 	getLogForSessions(error: any, response: any, body: any) {
 		
 		body = JSON.parse(body.toString());
 		for ( let session of body.sessions) {
 			new Session(this.endpoint, this.httpOptions, session.url).log();
+		}
+	}
+
+	getScreenshotsForSessions(error: any, response: any, body: any) {
+
+		body = JSON.parse(body.toString());
+		for ( let session of body.sessions) {
+			new Session(this.endpoint, this.httpOptions, session.url).screenshots();
 		}
 	}
 

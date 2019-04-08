@@ -27,6 +27,9 @@ class SessionsTool {
         if (this.options['logs'] !== undefined) {
             this.sessions.logs();
         }
+        if (this.options['screenshots'] !== undefined) {
+            this.sessions.screenshots();
+        }
     }
 }
 function isEmpty(obj) {
