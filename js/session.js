@@ -16,7 +16,7 @@ class Session {
         this.endpoint = endpoint;
         this.httpOptions = httpOptions;
         this.url = url;
-        this.dirPath = "res" + url;
+        this.dirPath = "testfairy-sessions" + url;
         this.logFilePath = this.dirPath + "/session.log";
     }
     log() {
@@ -24,14 +24,14 @@ class Session {
             console.log(this.logFilePath + " already exists");
             return;
         }
-        fs.mkdirSync("res" + this.url, { recursive: true });
+        fs.mkdirSync(this.dirPath, { recursive: true });
         request.get("https://" + this.endpoint + "/api/1" + this.url + "?fields=logs", this.httpOptions, (error, res, log) => this.saveLogs(error, res, log));
     }
     saveLogs(error, res, log) {
-        fs.writeFileSync("res" + this.url + '/session.log', log);
+        fs.writeFileSync(this.dirPath + '/session.log', log);
     }
     screenshots() {
-        fs.mkdirSync("res" + this.url, { recursive: true });
+        fs.mkdirSync(this.dirPath, { recursive: true });
         request.get("https://" + this.endpoint + "/api/1" + this.url + "?fields=events", this.httpOptions, (error, res, events) => this.onScreenshotsUrls(error, res, events));
     }
     formatTimestamp(ts) {

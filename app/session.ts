@@ -11,7 +11,7 @@ export class Session{
 
 	constructor(private endpoint: string, private httpOptions: any, private url: string) {
 
-		this.dirPath = "res" + url;
+		this.dirPath = "testfairy-sessions" + url;
 		this.logFilePath = this.dirPath + "/session.log"
 	}
 
@@ -22,17 +22,17 @@ export class Session{
 			return;
 		}
 
-		fs.mkdirSync("res" + this.url, {recursive: true});
+		fs.mkdirSync(this.dirPath, {recursive: true});
 		request.get("https://" + this.endpoint + "/api/1" + this.url + "?fields=logs", this.httpOptions, (error, res, log) => this.saveLogs(error, res, log));
 	}
 
 	private saveLogs(error:any, res:any, log:any) {
-		fs.writeFileSync("res" + this.url + '/session.log', log);
+		fs.writeFileSync(this.dirPath + '/session.log', log);
 
 	}
 
 	screenshots() {
-		fs.mkdirSync("res" + this.url, {recursive: true});
+		fs.mkdirSync(this.dirPath, {recursive: true});
 		request.get("https://" + this.endpoint + "/api/1" + this.url + "?fields=events", this.httpOptions, (error, res, events) => this.onScreenshotsUrls(error, res, events));
 	}
 
