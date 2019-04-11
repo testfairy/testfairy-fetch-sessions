@@ -33,8 +33,6 @@ class SessionsTool {
 			this.help();
 		}
 
-		console.log("Running with " + JSON.stringify(options));
-
 		const auth: Auth = {
 			"user": options["user"],
 			"pass": options["api-key"]
