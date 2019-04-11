@@ -7,7 +7,7 @@ This tool downloads screenshots and/or logs from recorded TestFairy sessions. Us
 #### Installation
 
 ```
-npm install -g --link git+ssh://git@github.com:testfairy/testfairy-fetch-sessions.git
+npm install -g --link git+https://github.com/testfairy/testfairy-fetch-sessions.git
 ```
 
 If you receive the error: "Could not create leading directories", then you should run the same command with `sudo -s` prefix.
