@@ -10,6 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __importStar(require("fs"));
 const request = require("request");
 const imageDownloader_1 = require("./imageDownloader");
+const sprintf = require('sprintf-js').sprintf;
 class Session {
     constructor(endpoint, httpOptions, url) {
         this.endpoint = endpoint;
@@ -20,7 +21,7 @@ class Session {
     }
     log() {
         if (fs.existsSync(this.logFilePath)) {
-            console.log(this.logFilePath + " is already exist");
+            console.log(this.logFilePath + " already exists");
             return;
         }
         fs.mkdirSync("res" + this.url, { recursive: true });
@@ -33,13 +34,16 @@ class Session {
         fs.mkdirSync("res" + this.url, { recursive: true });
         request.get("https://" + this.endpoint + "/api/1" + this.url + "?fields=events", this.httpOptions, (error, res, events) => this.onScreenshotsUrls(error, res, events));
     }
+    formatTimestamp(ts) {
+        return sprintf("%07.3f", ts); // 7 includes the point and 3
+    }
     onScreenshotsUrls(error, res, events) {
         events = JSON.parse(events.toString());
         const imageDownloader = new imageDownloader_1.ImageDownloader();
         for (let item of events.session.events.screenshotEvents) {
-            let filePath = this.dirPath + "/" + item.ts + ".jpg";
+            let filePath = this.dirPath + "/" + this.formatTimestamp(item.ts) + ".jpg";
             if (fs.existsSync(filePath)) {
-                console.log(filePath + " is already exist");
+                console.log(filePath + " already exists");
                 return;
             }
             console.log("Saving " + item.url + " to " + filePath);

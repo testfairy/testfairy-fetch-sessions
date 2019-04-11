@@ -76,7 +76,7 @@ class SessionsTool {
 			}
 		}
 
-		if (!options.logs && !options.screenshots) {
+		if (!("logs" in options) && !("screenshots" in options)) {
 			console.error("Must provide at least of --logs or --screenshots");
 			this.help();
 		}

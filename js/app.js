@@ -27,7 +27,6 @@ class SessionsTool {
             console.error("Invalid value for option \"endpoint\". Please supply only domain name, for example: \"mycompany.testfairy.com\".");
             this.help();
         }
-        console.log("Running with " + JSON.stringify(options));
         const auth = {
             "user": options["user"],
             "pass": options["api-key"]
@@ -62,7 +61,7 @@ class SessionsTool {
                 this.help();
             }
         }
-        if (!options.logs && !options.screenshots) {
+        if (!("logs" in options) && !("screenshots" in options)) {
             console.error("Must provide at least of --logs or --screenshots");
             this.help();
         }

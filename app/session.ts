@@ -3,6 +3,7 @@ import request = require('request');
 import FileSaver = require('file-saver');
 import {ImageDownloader} from "./imageDownloader";
 
+const sprintf = require('sprintf-js').sprintf;
 
 export class Session{
 	private dirPath: string;
@@ -17,7 +18,7 @@ export class Session{
 
 	log() {
 		if (fs.existsSync(this.logFilePath)) {
-			console.log(this.logFilePath + " is already exist");
+			console.log(this.logFilePath + " already exists");
 			return;
 		}
 
@@ -31,23 +32,25 @@ export class Session{
 	}
 
 	screenshots() {
-
 		fs.mkdirSync("res" + this.url, {recursive: true});
 		request.get("https://" + this.endpoint + "/api/1" + this.url + "?fields=events", this.httpOptions, (error, res, events) => this.onScreenshotsUrls(error, res, events));
 	}
 
-	private onScreenshotsUrls(error:any, res:any, events:any) {
+	private formatTimestamp(ts: number): string {
+		return sprintf("%07.3f", ts); // 7 includes the point and 3
+	}
 
+	private onScreenshotsUrls(error:any, res:any, events:any) {
 
 		events = JSON.parse(events.toString());
 
 		const imageDownloader = new ImageDownloader();
 		for (let item of events.session.events.screenshotEvents) {
 
-			let filePath = this.dirPath + "/" + item.ts + ".jpg";
+			let filePath = this.dirPath + "/" + this.formatTimestamp(item.ts) + ".jpg";
 
 			if (fs.existsSync(filePath)) {
-				console.log(filePath + " is already exist");
+				console.log(filePath + " already exists");
 				return;
 			}
 

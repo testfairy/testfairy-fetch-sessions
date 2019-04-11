@@ -9,17 +9,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/command-line-args": "^5.0.0",
-    "@types/node": "^11.13.0",
-    "@types/request": "^2.48.1",
     "command-line-args": "^5.1.1",
     "console-stamp": "^0.2.7",
     "file-saver": "^2.0.1",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
-    "typescript": "^3.4.1"
+    "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
-    "@types/file-saver": "^2.0.0"
+    "@types/command-line-args": "^5.0.0",
+    "@types/node": "^11.13.0",
+    "@types/request": "^2.48.1",
+    "@types/file-saver": "^2.0.0",
+    "typescript": "^3.4.1"
   }
 }
