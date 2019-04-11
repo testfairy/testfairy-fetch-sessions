@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "testfairy-fetch-sessions": "./index.js"
+  },
   "scripts": {
     "tsc": "tsc"
   },
