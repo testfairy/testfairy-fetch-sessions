@@ -18,68 +18,73 @@ console_stamp(console, 'HH:MM:ss.l');
 
 class SessionsTool {
 
-	private sessions: Sessions;
+	static main() {
+		const tool = new SessionsTool();
+		tool.run();
+	}
 
-	constructor(private options:any) {
+	private run() {
+		const options = commandline_args(options_definitions);
+		this.assertNoMissingParams(options);
 
+		const endpoint = options.endpoint;
+		if (endpoint.indexOf(":") >= 0 || endpoint.indexOf("/") >= 0) {
+			console.error("Invalid value for option \"endpoint\". Please supply only domain name, for example: \"mycompany.testfairy.com\".");
+			this.help();
+		}
 
-		let auth : Auth = {
+		console.log("Running with " + JSON.stringify(options));
+
+		const auth: Auth = {
 			"user": options["user"],
 			"pass": options["api-key"]
 		};
 
-		this.sessions = new Sessions(options['endpoint'], options['project-id'], auth);
+		const sessions: Sessions = new Sessions(options['endpoint'], options['project-id'], auth);
 
-	}
-
-	run() {
-
-		if (this.options['logs'] !== undefined) {
-			this.sessions.logs();
+		if (options['logs'] !== undefined) {
+			sessions.logs();
 		}
 
-		if (this.options['screenshots'] !== undefined) {
-			this.sessions.screenshots();
+		if (options['screenshots'] !== undefined) {
+			sessions.screenshots();
 		}
 	}
-}
 
-function isEmpty(obj:Object) {
-	return Object.keys(obj).length === 0;
-}
-
-function help() {
-
-	console.log("node index.js --endpoint \"subdomain.testfairy.com\" --user \"email@example.com\" --api-key \"0123456789abcdef\" --days 30 [--delete]");
-	console.log("");
-	console.log("Run a search for sessions older than given number of days. By default will only list session urls");
-	console.log("to screen. Use --delete to also delete these sessions. Warning: once deleted, a session cannot be");
-	console.log("restored from backup.");
-	process.exit(0);
-}
-
-function assertNoMissingParams(options:any) {
-
-	if (isEmpty(options) || options.help) {
-		help();
+	private isEmpty(obj:Object) {
+		return Object.keys(obj).length === 0;
 	}
 
-	const required = ["endpoint", "user", "api-key", "project-id"];
-	for (var i=0; i<required.length; i++) {
-		var k = required[i];
-		if (!(k in options)) {
-			console.error("Missing value of option \"" + k + "\"");
-			help();
+	private help() {
+		console.log("Usage: fetch-sessions-tool --endpoint \"subdomain.testfairy.com\" --user \"email@example.com\" --api-key \"0123456789abcdef\" [--logs] [--screenshots]");
+		console.log("");
+		console.log("This tool downloads screenshots and/or logs from recorded TestFairy sessions. Use this to download data to analyze");
+		console.log("with your own toolchain or to import to your own analytics systems.");
+		process.exit(1);
+	}
+
+	private assertNoMissingParams(options:any) {
+
+		if (this.isEmpty(options) || options.help) {
+			this.help();
+		}
+
+		const required = ["endpoint", "user", "api-key", "project-id"];
+		for (var i=0; i<required.length; i++) {
+			var k = required[i];
+			if (!(k in options)) {
+				console.error("Missing value of option \"" + k + "\"");
+				this.help();
+			}
+		}
+
+		if (!options.logs && !options.screenshots) {
+			console.error("Must provide at least of --logs or --screenshots");
+			this.help();
 		}
 	}
+
 }
 
-let options = commandline_args(options_definitions);
-assertNoMissingParams(options);
+SessionsTool.main();
 
-var endpoint = options.endpoint;
-if (endpoint.indexOf(":") >= 0 || endpoint.indexOf("/") >= 0) {
-	console.error("Invalid value for option \"endpoint\". Please supply only domain name, for example: \"mycompany.testfairy.com\".");
-	help();
-}
-new SessionsTool(options).run();
