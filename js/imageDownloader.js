@@ -3,13 +3,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const http = require("https");
 const fs = require("fs");
 class ImageDownloader {
-    download(imageUrl, path) {
-        const file = fs.createWriteStream(path);
+    download(download, callback) {
+        const file = fs.createWriteStream(download.filePath);
         try {
-            http.get(imageUrl, (res) => res.pipe(file));
+            http.get(download.url, (res) => {
+                res.pipe(file);
+                callback();
+            });
         }
         catch (error) {
-            console.dir(error);
+            callback(error);
         }
     }
 }

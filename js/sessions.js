@@ -1,21 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+///<reference path="session.ts"/>
 const request = require("request");
 const session_1 = require("./session");
 class Sessions {
-    constructor(endpoint, projectId, auth) {
+    constructor(endpoint, auth) {
         this.endpoint = endpoint;
-        this.projectId = projectId;
         this.auth = auth;
         this.httpOptions = {
             auth: this.auth,
         };
     }
-    logs() {
-        this.getSessions((error, res, body) => this.getLogForSessions(error, res, body));
+    logs(predicates) {
+        this.getSessions(predicates, (error, res, body) => this.getLogForSessions(error, res, body));
     }
-    screenshots() {
-        this.getSessions((error, res, body) => this.getScreenshotsForSessions(error, res, body));
+    screenshots(predicates) {
+        this.getSessions(predicates, (error, res, body) => this.getScreenshotsForSessions(error, res, body));
     }
     getLogForSessions(error, response, body) {
         body = JSON.parse(body.toString());
@@ -26,18 +26,17 @@ class Sessions {
     getScreenshotsForSessions(error, response, body) {
         body = JSON.parse(body.toString());
         for (let session of body.sessions) {
-            new session_1.Session(this.endpoint, this.httpOptions, session.url).screenshots();
+            new session_1.Session(this.endpoint, this.httpOptions, session.url).screenshots((download, error) => {
+                if (error) {
+                    console.log(error);
+                }
+                else {
+                    console.log("Saving " + download.url + " to " + download.filePath);
+                }
+            });
         }
     }
-    getSessions(callback) {
-        var predicates = [
-            {
-                "type": "number",
-                "attribute": "project_id",
-                "comparison": "eq",
-                "value": this.projectId
-            }
-        ];
+    getSessions(predicates, callback) {
         let option = Object.assign({}, this.httpOptions, {
             form: {
                 "predicates": JSON.stringify(predicates),

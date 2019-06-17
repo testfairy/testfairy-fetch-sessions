@@ -30,24 +30,46 @@ class Session {
     saveLogs(error, res, log) {
         fs.writeFileSync(this.dirPath + '/session.log', log);
     }
-    screenshots() {
+    screenshots(callback) {
         fs.mkdirSync(this.dirPath, { recursive: true });
-        request.get("https://" + this.endpoint + "/api/1" + this.url + "?fields=events", this.httpOptions, (error, res, events) => this.onScreenshotsUrls(error, res, events));
+        const endpoint = "https://" + this.endpoint + "/api/1" + this.url + "?fields=events";
+        request.get(endpoint, this.httpOptions, (error, res, events) => this.onScreenshotsUrls(error, res, events, callback));
     }
     formatTimestamp(ts) {
         return sprintf("%07.3f", ts); // 7 includes the point and 3
     }
-    onScreenshotsUrls(error, res, events) {
+    onScreenshotsUrls(error, res, events, callback) {
+        if (error) {
+            callback(undefined, error);
+            return;
+        }
         events = JSON.parse(events.toString());
         const imageDownloader = new imageDownloader_1.ImageDownloader();
-        for (let item of events.session.events.screenshotEvents) {
+        const screenshotEvents = events.session.events.screenshotEvents;
+        if (!screenshotEvents) {
+            callback(undefined, new Error(`No screenshots found for session with id ${events.session.id}`));
+            return;
+        }
+        var index = 0;
+        for (let item of screenshotEvents) {
             let filePath = this.dirPath + "/" + this.formatTimestamp(item.ts) + ".jpg";
+            const download = {
+                id: events.session.id,
+                session: this.url,
+                url: item.url,
+                timestamp: item.ts,
+                filePath: filePath,
+                imageIndex: index++,
+                totalImages: screenshotEvents.length
+            };
             if (fs.existsSync(filePath)) {
                 console.log(filePath + " already exists");
-                return;
+                callback(download);
+                continue;
             }
-            console.log("Saving " + item.url + " to " + filePath);
-            imageDownloader.download(item.url, filePath);
+            imageDownloader.download(download, (error) => {
+                callback(download, error);
+            });
         }
     }
 }
