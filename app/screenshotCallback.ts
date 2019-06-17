@@ -1,38 +1,31 @@
-import {Command} from './command';
-import {Auth} from "../auth";
-import {Session} from "../session";
-import {DownloadedSessionScreenshot} from "../sessionInterface";
-
-import * as url from "url";
 import * as path from "path";
 import * as exec from "child_process";
 import * as fs from 'fs';
 
+import {DownloadedSessionScreenshot} from "./sessionInterface";
+
 const ffmpeg = require('ffmpeg-static');
 
-export class Video implements Command {
+export interface ScreenshotCallbackCommand {
+	onDownload(download?: DownloadedSessionScreenshot, error?: Error): void;
+}
+
+export class NoOp implements ScreenshotCallbackCommand {
+	public onDownload(download?: DownloadedSessionScreenshot, error?: Error) {
+		if (error) {
+			console.warn(error.message);
+		} else {
+			console.log("Saving " + download!.url + " to " + download!.filePath);
+		}
+	}
+}
+
+export class Video implements ScreenshotCallbackCommand {
 	private downloads: any = {};
 
-	run(auth: Auth, options: any): void {
-		const sessionUrls = <string[]>options['sessions'];
-		const httpOptions = {
-			auth: auth,
-		};
-		sessionUrls.forEach(sessionUrl => {
-			const parsedUrl = url.parse(sessionUrl);
-			console.log(`Retrieving image from ${parsedUrl.hostname} at ${parsedUrl.pathname}`);
+	constructor(private rootPath: string) {}
 
-			const pieces = parsedUrl.pathname!.split("/");
-			const filename = `${pieces[2]}-${pieces[4]}-${pieces[6]}.mp4`;
-			if (fs.existsSync(filename)) {
-				console.log(filename + " already exists");
-			} else {
-				new Session(parsedUrl.hostname!, httpOptions, parsedUrl.pathname!).screenshots(this.onDownload.bind(this));
-			}
-		});
-	}
-
-	private onDownload(download?: DownloadedSessionScreenshot, error?: Error) {
+	public onDownload(download?: DownloadedSessionScreenshot, error?: Error) {
 		if (download) {
 			if (!this.downloads[download.id]) {
 				this.downloads[download.id] = {
@@ -50,7 +43,7 @@ export class Video implements Command {
 		}
 
 		if (error) {
-			console.log(error);
+			console.warn(error.message);
 		}
 	}
 
@@ -63,7 +56,12 @@ export class Video implements Command {
 
 		const session = downloads[0].session;
 		const pieces = session.split("/");
-		const filename = `${pieces[2]}-${pieces[4]}-${pieces[6]}.mp4`;
+		const filename = `${this.rootPath}/${pieces[2]}-${pieces[4]}-${pieces[6]}.mp4`;
+		if (fs.existsSync(filename)) {
+			console.log(filename + " already exists");
+			return;
+		}
+
 		const filesPath = path.dirname(downloads[0].filePath);
 
 		console.log(`All ${downloads.length} images for ${session} have been downloaded. Creating video ${filename}`);

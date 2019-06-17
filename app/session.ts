@@ -1,17 +1,20 @@
 import * as fs from 'fs';
 import request = require('request');
-import FileSaver = require('file-saver');
 import {ImageDownloader} from "./imageDownloader";
 import {DownloadedSessionScreenshot} from "./sessionInterface";
+import {ScreenshotCallbackCommand} from "./screenshotCallback";
 
 const sprintf = require('sprintf-js').sprintf;
 
 export class Session {
-	private dirPath: string;
 	private logFilePath: string;
 
-	constructor(private endpoint: string, private httpOptions: any, private url: string) {
-		this.dirPath = "testfairy-sessions" + url;
+	constructor(
+		private endpoint: string, 
+		private httpOptions: any, 
+		private url: string,
+		private dirPath: string
+	) {
 		this.logFilePath = this.dirPath + "/session.log"
 	}
 
@@ -29,7 +32,7 @@ export class Session {
 		fs.writeFileSync(this.dirPath + '/session.log', log);
 	}
 
-	screenshots(callback: (download?: DownloadedSessionScreenshot, error?: Error) => void) {
+	screenshots(callback: ScreenshotCallbackCommand) {
 		fs.mkdirSync(this.dirPath, {recursive: true});
 		const endpoint = "https://" + this.endpoint + "/api/1" + this.url + "?fields=events";
 		request.get(endpoint, this.httpOptions, (error, res, events) => this.onScreenshotsUrls(error, res, events, callback));
@@ -39,9 +42,9 @@ export class Session {
 		return sprintf("%07.3f", ts); // 7 includes the point and 3
 	}
 
-	private onScreenshotsUrls(error: any, res: any, events: any, callback: (download?: DownloadedSessionScreenshot, error?: Error) => void) {
+	private onScreenshotsUrls(error: any, res: any, events: any, callback: ScreenshotCallbackCommand) {
 		if (error) {
-			callback(undefined, error);
+			callback.onDownload(undefined, error);
 			return;
 		}
 
@@ -49,7 +52,7 @@ export class Session {
 		const imageDownloader = new ImageDownloader();
 		const screenshotEvents = events.session.events.screenshotEvents;
 		if (!screenshotEvents) {
-			callback(undefined, new Error(`No screenshots found for session with id ${events.session.id}`));
+			callback.onDownload(undefined, new Error(`No screenshots found for session with id ${events.session.id}`));
 			return;
 		}
 		var index = 0;
@@ -68,12 +71,12 @@ export class Session {
 
 			if (fs.existsSync(filePath)) {
 				console.log(filePath + " already exists");
-				callback(download);
+				callback.onDownload(download);
 				continue;
 			}
 
 			imageDownloader.download(download, (error) => {
-				callback(download, error);
+				callback.onDownload(download, error);
 			});
 		}
 	}

@@ -22,6 +22,8 @@ The example above would connect to endpoint `acme.testfairy.com` (which be a pri
 
 Since both `--logs` and `--screenshots` are provided, the tool will download all screenshots and all logs from app's project `1000`. You can find the id of the project (app) you want to download by examining the url (for example: https://app.testfairy.com/projects/1000/)
 
+You can create an MP4 video using all the downloaded screenshots by passing in `--video` along with `--screenshots`.
+
 TestFairy Fetch Sessions tool is incremental in downloads. This means that you can run the tool multiple times, and it will only download new sessions that were recorded.
 
 #### Support

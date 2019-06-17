@@ -6,10 +6,18 @@ export class ImageDownloader {
 
 	download(download: DownloadedSessionScreenshot, callback:(error?:Error) => void) {
 		const file = fs.createWriteStream(download.filePath);
+		file.on('error', (error) => {
+			callback(error);
+		});
+
 		try {
 			http.get(download.url, (res:any) => {
 				res.pipe(file);
-				callback();
+				file.on('finish', function() {
+					callback();
+				});
+			}).on('error', (error) => {
+				callback(error);
 			});
 		} catch (error) {
 			callback(error);

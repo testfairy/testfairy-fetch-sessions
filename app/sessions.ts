@@ -3,11 +3,16 @@ import request = require('request');
 import {Auth} from "./auth";
 import {Session} from "./session";
 import {DownloadedSessionScreenshot} from "./sessionInterface";
+import {ScreenshotCallbackCommand} from "./screenshotCallback";
 
 export class Sessions {
 	private httpOptions: any;
 
-	constructor(private endpoint: string, private auth: Auth) {
+	constructor(
+		private endpoint: string, 
+		private rootPath: string,
+		private auth: Auth
+	) {
 		this.httpOptions = {
 			auth: this.auth,
 		}
@@ -17,27 +22,23 @@ export class Sessions {
 		this.getSessions(predicates, (error: any, res: any, body: any) => this.getLogForSessions(error, res, body));
 	}
 
-	screenshots(predicates: any[]) {
-		this.getSessions(predicates, (error: any, res: any, body: any) => this.getScreenshotsForSessions(error, res, body));
+	screenshots(predicates: any[], callback: ScreenshotCallbackCommand) {
+		this.getSessions(predicates, (error: any, res: any, body: any) => this.getScreenshotsForSessions(error, res, body, callback));
 	}
 
 	getLogForSessions(error: any, response: any, body: any) {
 		body = JSON.parse(body.toString());
 		for (let session of body.sessions) {
-			new Session(this.endpoint, this.httpOptions, session.url).log();
+			let dirPath = this.rootPath + session.url;
+			new Session(this.endpoint, this.httpOptions, session.url, dirPath).log();
 		}
 	}
 
-	getScreenshotsForSessions(error: any, response: any, body: any) {
+	getScreenshotsForSessions(error: any, response: any, body: any, callback: ScreenshotCallbackCommand) {
 		body = JSON.parse(body.toString());
 		for (let session of body.sessions) {
-			new Session(this.endpoint, this.httpOptions, session.url).screenshots((download?: DownloadedSessionScreenshot, error?: Error) => {
-				if (error) {
-					console.log(error);
-				} else {
-					console.log("Saving " + download!.url + " to " + download!.filePath);
-				}
-			});
+			let dirPath = this.rootPath + session.url;
+			new Session(this.endpoint, this.httpOptions, session.url, dirPath).screenshots(callback);
 		}
 	}
 
@@ -51,7 +52,6 @@ export class Sessions {
 			}
 		};
 
-		// request.post("https://"+this.endpoint+"/api/1/search/", option, (error, response, body) => this.getLogForSessions(error, response, body));
 		request.post("https://" + this.endpoint + "/api/1/search/", option, (error, response, body) => callback(error, response, body));
 	}
 }

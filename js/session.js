@@ -12,11 +12,11 @@ const request = require("request");
 const imageDownloader_1 = require("./imageDownloader");
 const sprintf = require('sprintf-js').sprintf;
 class Session {
-    constructor(endpoint, httpOptions, url) {
+    constructor(endpoint, httpOptions, url, dirPath) {
         this.endpoint = endpoint;
         this.httpOptions = httpOptions;
         this.url = url;
-        this.dirPath = "testfairy-sessions" + url;
+        this.dirPath = dirPath;
         this.logFilePath = this.dirPath + "/session.log";
     }
     log() {
@@ -40,14 +40,14 @@ class Session {
     }
     onScreenshotsUrls(error, res, events, callback) {
         if (error) {
-            callback(undefined, error);
+            callback.onDownload(undefined, error);
             return;
         }
         events = JSON.parse(events.toString());
         const imageDownloader = new imageDownloader_1.ImageDownloader();
         const screenshotEvents = events.session.events.screenshotEvents;
         if (!screenshotEvents) {
-            callback(undefined, new Error(`No screenshots found for session with id ${events.session.id}`));
+            callback.onDownload(undefined, new Error(`No screenshots found for session with id ${events.session.id}`));
             return;
         }
         var index = 0;
@@ -64,11 +64,11 @@ class Session {
             };
             if (fs.existsSync(filePath)) {
                 console.log(filePath + " already exists");
-                callback(download);
+                callback.onDownload(download);
                 continue;
             }
             imageDownloader.download(download, (error) => {
-                callback(download, error);
+                callback.onDownload(download, error);
             });
         }
     }

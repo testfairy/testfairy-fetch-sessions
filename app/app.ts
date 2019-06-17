@@ -1,7 +1,7 @@
 // lib/app.ts
 import {Sessions} from "./sessions";
 import {Auth} from "./auth";
-import {Video} from "./commands/video";
+import {NoOp, Video} from "./screenshotCallback";
 
 const console_stamp = require('console-stamp');
 const commandline_args = require('command-line-args');
@@ -14,7 +14,7 @@ const options_definitions = [
 	{name: 'endpoint', type: String},
 	{name: 'logs'},
 	{name: 'screenshots'},
-	{name: 'sessions', multiple: true}
+	{name: 'video'}
 ];
 
 console_stamp(console, 'HH:MM:ss.l');
@@ -33,6 +33,7 @@ class SessionsTool {
 			"user": options["user"],
 			"pass": options["api-key"]
 		};
+		let rootPath = "testfairy-sessions";
 
 		if (options['logs'] !== undefined) {
 			this.assertNoMissingParams(options, ["project-id", "endpoint"]);
@@ -43,7 +44,7 @@ class SessionsTool {
 				"comparison": "eq",
 				"value": options['project-id']
 			}];
-			const sessions: Sessions = new Sessions(this.getEndpoint(options), auth);
+			const sessions: Sessions = new Sessions(this.getEndpoint(options), rootPath, auth);
 			sessions.logs(predicates);
 		}
 
@@ -56,12 +57,10 @@ class SessionsTool {
 				"comparison": "eq",
 				"value": options['project-id']
 			}];
-			const sessions: Sessions = new Sessions(this.getEndpoint(options), auth);
-			sessions.screenshots(predicates);
-		}
+			const sessions: Sessions = new Sessions(this.getEndpoint(options), rootPath, auth);
+			let callback = options['video'] === undefined ? new NoOp() : new Video(rootPath);
 
-		if (options['sessions'] !== undefined) {
-			new Video().run(auth, options);
+			sessions.screenshots(predicates, callback);
 		}
 	}
 
@@ -70,10 +69,10 @@ class SessionsTool {
 	}
 
 	private help() {
-		console.log("Usage: fetch-sessions-tool --endpoint \"subdomain.testfairy.com\" --user \"email@example.com\" --api-key \"0123456789abcdef\" [--logs] [--screenshots] [--sessions <list of session urls>]");
+		console.log("Usage: fetch-sessions-tool --endpoint \"subdomain.testfairy.com\" --user \"email@example.com\" --api-key \"0123456789abcdef\" --project-id=1000 [--logs] [--screenshots] [--video]");
 		console.log("");
 		console.log("This tool downloads screenshots and/or logs from recorded TestFairy sessions. Use this to download data to analyze");
-		console.log("with your own toolchain or to import to your own analytics systems.");
+		console.log("sessions with your own toolchain or to import to your own analytics systems.");
 		process.exit(1);
 	}
 
