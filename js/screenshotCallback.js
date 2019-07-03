@@ -23,8 +23,7 @@ class NoOp {
 }
 exports.NoOp = NoOp;
 class Video {
-    constructor(rootPath) {
-        this.rootPath = rootPath;
+    constructor() {
         this.downloads = {};
     }
     onDownload(download, error) {
@@ -53,14 +52,15 @@ class Video {
             console.log("No images downloaded for session");
             return;
         }
-        const session = downloads[0].session;
+        const download = downloads[0];
+        const session = download.session;
+        const filesPath = path.dirname(download.filePath);
         const pieces = session.split("/");
-        const filename = `${this.rootPath}/${pieces[2]}-${pieces[4]}-${pieces[6]}.mp4`;
+        const filename = `${filesPath}/${pieces[2]}-${pieces[4]}-${pieces[6]}.mp4`;
         if (fs.existsSync(filename)) {
             console.log(filename + " already exists");
             return;
         }
-        const filesPath = path.dirname(downloads[0].filePath);
         console.log(`All ${downloads.length} images for ${session} have been downloaded. Creating video ${filename}`);
         const command = `${ffmpeg.path} -r 1 -pattern_type glob -i '${filesPath}/*.jpg' -c:v libx264 ${filename}`;
         exec.exec(command, (err, stdout, stderr) => {

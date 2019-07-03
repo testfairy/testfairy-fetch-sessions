@@ -2,7 +2,6 @@
 import request = require('request');
 import {Auth} from "./auth";
 import {Session} from "./session";
-import {DownloadedSessionScreenshot} from "./sessionInterface";
 import {ScreenshotCallbackCommand} from "./screenshotCallback";
 
 export class Sessions {
@@ -51,7 +50,6 @@ export class Sessions {
 				}
 			}
 		};
-
 		request.post("https://" + this.endpoint + "/api/1/search/", option, (error, response, body) => callback(error, response, body));
 	}
 }

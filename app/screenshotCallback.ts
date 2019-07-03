@@ -23,8 +23,6 @@ export class NoOp implements ScreenshotCallbackCommand {
 export class Video implements ScreenshotCallbackCommand {
 	private downloads: any = {};
 
-	constructor(private rootPath: string) {}
-
 	public onDownload(download?: DownloadedSessionScreenshot, error?: Error) {
 		if (download) {
 			if (!this.downloads[download.id]) {
@@ -54,15 +52,16 @@ export class Video implements ScreenshotCallbackCommand {
 			return;
 		}
 
-		const session = downloads[0].session;
+		const download = downloads[0];
+		const session = download.session;
+		const filesPath = path.dirname(download.filePath);
 		const pieces = session.split("/");
-		const filename = `${this.rootPath}/${pieces[2]}-${pieces[4]}-${pieces[6]}.mp4`;
+		const filename = `${filesPath}/${pieces[2]}-${pieces[4]}-${pieces[6]}.mp4`;
 		if (fs.existsSync(filename)) {
 			console.log(filename + " already exists");
 			return;
 		}
 
-		const filesPath = path.dirname(downloads[0].filePath);
 
 		console.log(`All ${downloads.length} images for ${session} have been downloaded. Creating video ${filename}`);
 

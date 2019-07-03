@@ -48,7 +48,7 @@ class SessionsTool {
 			sessions.logs(predicates);
 		}
 
-		if (options['screenshots'] !== undefined) {
+		if (options['screenshots'] !== undefined || options['video'] !== undefined) {
 			this.assertNoMissingParams(options, ["project-id", "endpoint"]);
 
 			const predicates: [any] = [{
@@ -58,7 +58,7 @@ class SessionsTool {
 				"value": options['project-id']
 			}];
 			const sessions: Sessions = new Sessions(this.getEndpoint(options), rootPath, auth);
-			let callback = options['video'] === undefined ? new NoOp() : new Video(rootPath);
+			let callback = options['video'] === undefined ? new NoOp() : new Video();
 
 			sessions.screenshots(predicates, callback);
 		}
@@ -99,8 +99,8 @@ class SessionsTool {
 			}
 		}
 
-		if (!("logs" in options) && !("screenshots" in options) && !("sessions" in options)) {
-			console.error("Must provide at least one of --logs, --screenshots or --sessions");
+		if (!("logs" in options) && !("screenshots" in options) && !("video" in options)) {
+			console.error("Must provide at least one of --logs, --screenshots or --video");
 			this.help();
 		}
 	}
