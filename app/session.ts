@@ -29,6 +29,7 @@ export class Session {
 	}
 
 	private saveLogs(error: any, res: any, log: any) {
+		console.log('Saving session log to ' + this.dirPath + '/session.log');
 		fs.writeFileSync(this.dirPath + '/session.log', log);
 	}
 
