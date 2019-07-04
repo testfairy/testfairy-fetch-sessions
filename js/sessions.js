@@ -1,50 +1,44 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+///<reference path="session.ts"/>
 const request = require("request");
 const session_1 = require("./session");
 class Sessions {
-    constructor(endpoint, projectId, auth) {
+    constructor(endpoint, rootPath, auth) {
         this.endpoint = endpoint;
-        this.projectId = projectId;
+        this.rootPath = rootPath;
         this.auth = auth;
         this.httpOptions = {
             auth: this.auth,
         };
     }
-    logs() {
-        this.getSessions((error, res, body) => this.getLogForSessions(error, res, body));
+    logs(predicates) {
+        this.getSessions(predicates, (error, res, body) => this.getLogForSessions(error, res, body));
     }
-    screenshots() {
-        this.getSessions((error, res, body) => this.getScreenshotsForSessions(error, res, body));
+    screenshots(predicates, callback) {
+        this.getSessions(predicates, (error, res, body) => this.getScreenshotsForSessions(error, res, body, callback));
     }
     getLogForSessions(error, response, body) {
         body = JSON.parse(body.toString());
         for (let session of body.sessions) {
-            new session_1.Session(this.endpoint, this.httpOptions, session.url).log();
+            let dirPath = this.rootPath + session.url;
+            new session_1.Session(this.endpoint, this.httpOptions, session.url, dirPath).log();
         }
     }
-    getScreenshotsForSessions(error, response, body) {
+    getScreenshotsForSessions(error, response, body, callback) {
         body = JSON.parse(body.toString());
         for (let session of body.sessions) {
-            new session_1.Session(this.endpoint, this.httpOptions, session.url).screenshots();
+            let dirPath = this.rootPath + session.url;
+            new session_1.Session(this.endpoint, this.httpOptions, session.url, dirPath).screenshots(callback);
         }
     }
-    getSessions(callback) {
-        var predicates = [
-            {
-                "type": "number",
-                "attribute": "project_id",
-                "comparison": "eq",
-                "value": this.projectId
-            }
-        ];
+    getSessions(predicates, callback) {
         let option = Object.assign({}, this.httpOptions, {
             form: {
                 "predicates": JSON.stringify(predicates),
                 "fields": "url"
             }
         });
-        // request.post("https://"+this.endpoint+"/api/1/search/", option, (error, response, body) => this.getLogForSessions(error, response, body));
         request.post("https://" + this.endpoint + "/api/1/search/", option, (error, response, body) => callback(error, response, body));
     }
 }
