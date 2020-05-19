@@ -51,6 +51,7 @@ export interface Log {
 	tag: string;
 	text: string;
 	ts: number;
+	level: string;
 }
 
 export interface ScreenshotEvent {

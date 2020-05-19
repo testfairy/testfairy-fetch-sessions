@@ -29,10 +29,10 @@ exports.isEmpty = (obj) => {
     return Object.keys(obj).length === 0;
 };
 exports.getRsaEncryptionKey = (options) => {
-    const rsaPrivateKeyFilePath = options.key('rsa-private-key');
-    if (!rsaPrivateKeyFilePath) {
+    if (!options.contains('rsa-private-key')) {
         return null;
     }
+    const rsaPrivateKeyFilePath = options.key('rsa-private-key');
     if (!fs.existsSync(rsaPrivateKeyFilePath)) {
         throw new Error(`RSA private key file (${rsaPrivateKeyFilePath}) does not exist.`);
     }

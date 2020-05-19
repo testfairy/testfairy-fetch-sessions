@@ -18,11 +18,11 @@ export const isEmpty = (obj: Object) => {
 };
 
 export const getRsaEncryptionKey = (options: Options) => {
-	const rsaPrivateKeyFilePath = options.key('rsa-private-key');
-	if (!rsaPrivateKeyFilePath) {
+	if (!options.contains('rsa-private-key')) {
 		return null;
 	}
 
+	const rsaPrivateKeyFilePath = options.key('rsa-private-key');
 	if (!fs.existsSync(rsaPrivateKeyFilePath)) {
 		throw new Error(`RSA private key file (${rsaPrivateKeyFilePath}) does not exist.`);
 	}

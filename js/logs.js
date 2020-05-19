@@ -18,6 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __importStar(require("fs"));
 const helpers_1 = require("./helpers");
 const aes_encryption_1 = require("./aes-encryption");
+const sprintf = require('sprintf-js').sprintf;
 const save = (log, logFilePath, dirPath) => {
     if (log == null) {
         return;
@@ -39,7 +40,13 @@ const convert = (data, rsa) => {
         const aes = new aes_encryption_1.AESEncryption(keyDecrypt, ivDecrypt);
         logs.forEach(log => log.text = aes.decryptString(log.text));
     }
-    const output = logs.map(log => log.text).join("\n");
+    const output = logs.map(log => {
+        const ts = Math.max(0, log.ts);
+        const mm = Math.floor(ts / 60.0);
+        const ss = Math.floor(ts) % 60;
+        const mmss = sprintf("%02d:%02d", mm, ss);
+        return `${mmss} ${log.level}/${log.tag} ${log.text}`.trim();
+    }).join("\n");
     return output;
 };
 exports.logs = (sessions, options) => __awaiter(this, void 0, void 0, function* () {
