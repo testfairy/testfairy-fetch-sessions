@@ -30,11 +30,11 @@ class SessionsTool {
 		const predicates = makeProjectPredicates(options);
 		const sessions = await fetchSessions(predicates, options);
 		if (options.contains('logs')) {
-			logs(sessions, options);
+			await logs(sessions, options);
 		}
 
 		if (options.contains('screenshots') || options.contains('video')) {
-			screenshots(sessions, options);
+			await screenshots(sessions, options);
 		}
 	}
 

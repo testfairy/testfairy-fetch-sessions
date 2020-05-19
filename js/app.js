@@ -36,10 +36,10 @@ class SessionsTool {
             const predicates = helpers_1.makeProjectPredicates(options);
             const sessions = yield helpers_1.sessions(predicates, options);
             if (options.contains('logs')) {
-                logs_1.logs(sessions, options);
+                yield logs_1.logs(sessions, options);
             }
             if (options.contains('screenshots') || options.contains('video')) {
-                screenshots_1.screenshots(sessions, options);
+                yield screenshots_1.screenshots(sessions, options);
             }
         });
     }
