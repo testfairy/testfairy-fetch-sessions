@@ -8,12 +8,12 @@ class ImageDownloader {
         file.on('error', (error) => {
             callback(error);
         });
+        file.on('finish', function () {
+            callback();
+        });
         try {
             http.get(download.url, (res) => {
                 res.pipe(file);
-                file.on('finish', function () {
-                    callback();
-                });
             }).on('error', (error) => {
                 callback(error);
             });
@@ -24,3 +24,4 @@ class ImageDownloader {
     }
 }
 exports.ImageDownloader = ImageDownloader;
+//# sourceMappingURL=imageDownloader.js.map

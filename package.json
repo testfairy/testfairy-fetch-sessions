@@ -7,15 +7,18 @@
     "testfairy-fetch-sessions": "./index.js"
   },
   "scripts": {
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aes-js": "^3.1.2",
     "command-line-args": "^5.1.1",
     "console-stamp": "^0.2.7",
     "ffmpeg-static": "^2.4.0",
     "file-saver": "^2.0.1",
+    "node-rsa": "^1.0.8",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "sprintf-js": "^1.1.2"

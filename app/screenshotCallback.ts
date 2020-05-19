@@ -2,7 +2,7 @@ import * as path from "path";
 import * as exec from "child_process";
 import * as fs from 'fs';
 
-import {DownloadedSessionScreenshot} from "./sessionInterface";
+import {DownloadedSessionScreenshot} from "./models";
 
 const ffmpeg = require('ffmpeg-static');
 
@@ -61,7 +61,6 @@ export class Video implements ScreenshotCallbackCommand {
 			console.log(filename + " already exists");
 			return;
 		}
-
 
 		console.log(`All ${downloads.length} images for ${session} have been downloaded. Creating video ${filename}`);
 

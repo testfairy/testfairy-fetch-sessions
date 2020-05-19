@@ -1,6 +1,6 @@
 import http = require('https');
 import fs = require('fs');
-import {DownloadedSessionScreenshot} from "./sessionInterface";
+import {DownloadedSessionScreenshot} from "./models";
 
 export class ImageDownloader {
 
@@ -9,13 +9,13 @@ export class ImageDownloader {
 		file.on('error', (error) => {
 			callback(error);
 		});
+		file.on('finish', function() {
+			callback();
+		});
 
 		try {
 			http.get(download.url, (res:any) => {
 				res.pipe(file);
-				file.on('finish', function() {
-					callback();
-				});
 			}).on('error', (error) => {
 				callback(error);
 			});

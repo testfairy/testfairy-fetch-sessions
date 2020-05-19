@@ -19,18 +19,6 @@ class Session {
         this.dirPath = dirPath;
         this.logFilePath = this.dirPath + "/session.log";
     }
-    log() {
-        if (fs.existsSync(this.logFilePath)) {
-            console.log(this.logFilePath + " already exists");
-            return;
-        }
-        fs.mkdirSync(this.dirPath, { recursive: true });
-        request.get("https://" + this.endpoint + "/api/1" + this.url + "?fields=logs", this.httpOptions, (error, res, log) => this.saveLogs(error, res, log));
-    }
-    saveLogs(error, res, log) {
-        console.log('Saving session log to ' + this.dirPath + '/session.log');
-        fs.writeFileSync(this.dirPath + '/session.log', log);
-    }
     screenshots(callback) {
         fs.mkdirSync(this.dirPath, { recursive: true });
         const endpoint = "https://" + this.endpoint + "/api/1" + this.url + "?fields=events";
@@ -75,3 +63,4 @@ class Session {
     }
 }
 exports.Session = Session;
+//# sourceMappingURL=session.js.map

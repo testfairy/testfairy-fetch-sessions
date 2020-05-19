@@ -76,3 +76,4 @@ class Video {
     }
 }
 exports.Video = Video;
+//# sourceMappingURL=screenshotCallback.js.map

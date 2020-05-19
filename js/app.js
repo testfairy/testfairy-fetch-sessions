@@ -1,60 +1,47 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // lib/app.ts
-const sessions_1 = require("./sessions");
-const screenshotCallback_1 = require("./screenshotCallback");
+const models_1 = require("./models");
+const helpers_1 = require("./helpers");
+const logs_1 = require("./logs");
+const screenshots_1 = require("./screenshots");
 const console_stamp = require('console-stamp');
-const commandline_args = require('command-line-args');
 const options_definitions = [
     { name: 'help', alias: 'h', type: Boolean },
     { name: 'project-id', type: Number },
     { name: 'user', type: String },
     { name: 'api-key', type: String },
     { name: 'endpoint', type: String },
+    { name: 'rsa-private-key', type: String },
     { name: 'logs' },
     { name: 'screenshots' },
     { name: 'video' }
 ];
 console_stamp(console, 'HH:MM:ss.l');
 class SessionsTool {
-    static main() {
-        const tool = new SessionsTool();
-        tool.run();
-    }
     run() {
-        const options = commandline_args(options_definitions);
-        this.assertNoMissingParams(options, ["user", "api-key"]);
-        const auth = {
-            "user": options["user"],
-            "pass": options["api-key"]
-        };
-        let rootPath = "testfairy-sessions";
-        if (options['logs'] !== undefined) {
-            this.assertNoMissingParams(options, ["project-id", "endpoint"]);
-            const predicates = [{
-                    "type": "number",
-                    "attribute": "project_id",
-                    "comparison": "eq",
-                    "value": options['project-id']
-                }];
-            const sessions = new sessions_1.Sessions(this.getEndpoint(options), rootPath, auth);
-            sessions.logs(predicates);
-        }
-        if (options['screenshots'] !== undefined || options['video'] !== undefined) {
-            this.assertNoMissingParams(options, ["project-id", "endpoint"]);
-            const predicates = [{
-                    "type": "number",
-                    "attribute": "project_id",
-                    "comparison": "eq",
-                    "value": options['project-id']
-                }];
-            const sessions = new sessions_1.Sessions(this.getEndpoint(options), rootPath, auth);
-            let callback = options['video'] === undefined ? new screenshotCallback_1.NoOp() : new screenshotCallback_1.Video();
-            sessions.screenshots(predicates, callback);
-        }
-    }
-    isEmpty(obj) {
-        return Object.keys(obj).length === 0;
+        return __awaiter(this, void 0, void 0, function* () {
+            const options = new models_1.Options(options_definitions);
+            if (options.containsHelp()) {
+                this.help();
+            }
+            const predicates = helpers_1.makeProjectPredicates(options);
+            const sessions = yield helpers_1.sessions(predicates, options);
+            if (options.contains('logs')) {
+                logs_1.logs(sessions, options);
+            }
+            if (options.contains('screenshots') || options.contains('video')) {
+                screenshots_1.screenshots(sessions, options);
+            }
+        });
     }
     help() {
         console.log("Usage: fetch-sessions-tool --endpoint \"subdomain.testfairy.com\" --user \"email@example.com\" --api-key \"0123456789abcdef\" --project-id=1000 [--logs] [--screenshots] [--video]");
@@ -63,29 +50,7 @@ class SessionsTool {
         console.log("sessions with your own toolchain or to import to your own analytics systems.");
         process.exit(1);
     }
-    getEndpoint(options) {
-        const endpoint = options.endpoint;
-        if (endpoint.indexOf(":") >= 0 || endpoint.indexOf("/") >= 0) {
-            console.error("Invalid value for option \"endpoint\". Please supply only domain name, for example: \"mycompany.testfairy.com\".");
-            this.help();
-        }
-        return endpoint;
-    }
-    assertNoMissingParams(options, required) {
-        if (this.isEmpty(options) || options.help) {
-            this.help();
-        }
-        for (var i = 0; i < required.length; i++) {
-            var k = required[i];
-            if (!(k in options)) {
-                console.error("Missing value of option \"" + k + "\"");
-                this.help();
-            }
-        }
-        if (!("logs" in options) && !("screenshots" in options) && !("video" in options)) {
-            console.error("Must provide at least one of --logs, --screenshots or --video");
-            this.help();
-        }
-    }
 }
-SessionsTool.main();
+const tool = new SessionsTool();
+tool.run().catch((error) => { console.error(error.message); tool.help(); });
+//# sourceMappingURL=app.js.map
