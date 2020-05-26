@@ -15,7 +15,8 @@ const options_definitions = [
 	{name: 'rsa-private-key', type: String},
 	{name: 'logs'},
 	{name: 'screenshots'},
-	{name: 'video'}
+	{name: 'video'},
+	{name: 'all-time'}
 ];
 
 console_stamp(console, 'HH:MM:ss.l');
@@ -29,6 +30,11 @@ class SessionsTool {
 
 		const predicates = makeProjectPredicates(options);
 		const sessions = await fetchSessions(predicates, options);
+		if (sessions.length === 0) {
+			console.log("No new sessions found");
+			return;
+		}
+
 		if (options.contains('logs')) {
 			await logs(sessions, options);
 		}

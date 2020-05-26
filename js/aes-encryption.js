@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AESEncryption = exports.ArrayBufferUtils = void 0;
 const aesjs = require('aes-js');
 class ArrayBufferUtils {
     static base64ToArrayBuffer(input) {

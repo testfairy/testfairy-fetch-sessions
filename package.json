@@ -7,8 +7,8 @@
     "testfairy-fetch-sessions": "./index.js"
   },
   "scripts": {
-    "tsc": "tsc",
-    "build": "tsc"
+    "tsc": "./node_modules/typescript/bin/tsc -p tsconfig.json",
+    "build": "./node_modules/typescript/bin/tsc -p tsconfig.json"
   },
   "author": "",
   "license": "ISC",
