@@ -1,20 +1,34 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sessions = exports.makeProjectPredicates = exports.assertNoMissingParams = exports.getRsaEncryptionKey = exports.isEmpty = exports.getEndpoint = void 0;
 const fs = __importStar(require("fs"));
 const request = require('request');
 const NodeRSA = require('node-rsa');
@@ -52,23 +66,32 @@ exports.assertNoMissingParams = (options, required) => {
     }
 };
 exports.makeProjectPredicates = (options) => {
-    return [{
+    const predicates = [{
             "type": "number",
             "attribute": "project_id",
             "comparison": "eq",
             "value": options.projectId()
         }];
+    if (!options.contains('all-time')) {
+        predicates.push({
+            "type": "date",
+            "attribute": "recorded_at",
+            "comparison": "gt",
+            "value": "now-24h/h"
+        });
+    }
+    return predicates;
 };
-const fetchSessionUrls = (predicates, options) => __awaiter(this, void 0, void 0, function* () {
+const searchSessions = (predicates, options) => __awaiter(void 0, void 0, void 0, function* () {
     const endpoint = options.key('endpoint');
     const auth = options.auth();
     const url = `https://${endpoint}/api/1/search/`;
     return new Promise((resolve, reject) => {
         const httpOptions = { auth };
-        let option = Object.assign({}, httpOptions, {
+        let option = Object.assign(Object.assign({}, httpOptions), {
             form: {
                 "predicates": JSON.stringify(predicates),
-                "fields": "url"
+                "fields": "url,recorded_at"
             }
         });
         const callback = (error, response, body) => {
@@ -87,7 +110,7 @@ const fetchSessionUrls = (predicates, options) => __awaiter(this, void 0, void 0
         request.post(url, option, callback);
     });
 });
-const fetchSessionEvents = (session, options) => __awaiter(this, void 0, void 0, function* () {
+const fetchSessionData = (session, options) => __awaiter(void 0, void 0, void 0, function* () {
     const endpoint = options.key('endpoint');
     const auth = options.auth();
     const url = `https://${endpoint}/api/1${session.url}?fields=events`;
@@ -100,7 +123,7 @@ const fetchSessionEvents = (session, options) => __awaiter(this, void 0, void 0,
             else {
                 try {
                     const response = JSON.parse(body.toString());
-                    const data = Object.assign({}, response.session, { url: session.url });
+                    const data = Object.assign(Object.assign({}, response.session), { url: session.url, recordedAt: new Date(session.recorded_at) });
                     resolve(data);
                 }
                 catch (exception) {
@@ -110,10 +133,10 @@ const fetchSessionEvents = (session, options) => __awaiter(this, void 0, void 0,
         });
     });
 });
-exports.sessions = (predicates, options) => __awaiter(this, void 0, void 0, function* () {
-    const sessionUrls = yield fetchSessionUrls(predicates, options);
-    let events = sessionUrls.sessions.map((session) => {
-        return fetchSessionEvents(session, options);
+exports.sessions = (predicates, options) => __awaiter(void 0, void 0, void 0, function* () {
+    const sessionData = yield searchSessions(predicates, options);
+    const events = sessionData.sessions.map((session) => {
+        return fetchSessionData(session, options);
     });
     return Promise.all(events);
 });

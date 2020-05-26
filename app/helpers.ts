@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { Options, SessionsUrlResponse, SessionsUrl, SessionData } from './models';
+import { Options, SessionsSearchResponse, SessionSearchData, SessionData } from './models';
 
 const request = require('request');
 const NodeRSA = require('node-rsa');
@@ -46,16 +46,27 @@ export const assertNoMissingParams = (options: any, required: string[]) => {
 };
 
 export const makeProjectPredicates = (options: Options) => {
-	return [{
+	const predicates = [{
 		"type": "number",
 		"attribute": "project_id",
 		"comparison": "eq",
 		"value": options.projectId()
-	}]
+	}];
+
+	if (!options.contains('all-time')) {
+		predicates.push({
+			"type":"date",
+			"attribute":"recorded_at",
+			"comparison":"gt",
+			"value":"now-24h/h"
+		});
+	}
+
+	return predicates;
 }
 
 
-const fetchSessionUrls = async (predicates: any[], options: Options): Promise<SessionsUrlResponse> => {
+const searchSessions = async (predicates: any[], options: Options): Promise<SessionsSearchResponse> => {
 	const endpoint = options.key('endpoint');
 	const auth = options.auth();
 	const url = `https://${endpoint}/api/1/search/`;
@@ -66,7 +77,7 @@ const fetchSessionUrls = async (predicates: any[], options: Options): Promise<Se
 			...httpOptions, ...{
 				form: {
 					"predicates": JSON.stringify(predicates),
-					"fields": "url"
+					"fields": "url,recorded_at"
 				}
 			}
 		};
@@ -86,7 +97,7 @@ const fetchSessionUrls = async (predicates: any[], options: Options): Promise<Se
 	});
 }
 
-const fetchSessionEvents = async (session: SessionsUrl, options: Options): Promise<SessionData> => {
+const fetchSessionData = async (session: SessionSearchData, options: Options): Promise<SessionData> => {
 	const endpoint = options.key('endpoint');
 	const auth = options.auth();
 	const url = `https://${endpoint}/api/1${session.url}?fields=events`;
@@ -99,7 +110,11 @@ const fetchSessionEvents = async (session: SessionsUrl, options: Options): Promi
 			} else {
 				try {
 					const response = JSON.parse(body.toString());
-					const data: SessionData = {...response.session, url: session.url};
+					const data: SessionData = {
+						...response.session,
+						url: session.url,
+						recordedAt: new Date(session.recorded_at)
+					};
 					resolve(data);
 				} catch (exception) {
 					reject(exception);
@@ -110,9 +125,9 @@ const fetchSessionEvents = async (session: SessionsUrl, options: Options): Promi
 }
 
 export const sessions = async (predicates: any[], options: Options): Promise<SessionData[]> => {
-	const sessionUrls: any = await fetchSessionUrls(predicates, options);
-	let events = sessionUrls.sessions.map((session: SessionsUrl) => {
-		return fetchSessionEvents(session, options)
+	const sessionData: any = await searchSessions(predicates, options);
+	const events = sessionData.sessions.map((session: SessionSearchData) => {
+		return fetchSessionData(session, options)
 	});
 
 	return Promise.all(events);

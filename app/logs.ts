@@ -28,10 +28,10 @@ const convert = (data: SessionData, rsa: any): string | null => {
 	}
 
 	const output = logs.map(log => {
-		const ts = Math.max(0, log.ts);
-		const mm = Math.floor(ts / 60.0);
-		const ss = Math.floor(ts) % 60;
-		const mmss = sprintf("%02d:%02d", mm, ss);
+		const logTs = Math.max(0, log.ts);
+		const recordedAt = new Date(data.recordedAt);
+		recordedAt.setTime(data.recordedAt.getTime() + logTs);
+		const mmss = recordedAt.toISOString();
 		return `${mmss} ${log.level}/${log.tag} ${log.text}`.trim();
 	}).join("\n");
 	return output;

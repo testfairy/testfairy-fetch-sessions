@@ -7,13 +7,14 @@ export interface Auth {
 	pass: string
 }
 
-export interface SessionsUrl {
+export interface SessionSearchData {
 	url: string;
+	recorded_at: string
 }
 
-export interface SessionsUrlResponse {
+export interface SessionsSearchResponse {
 	total_count: number;
-	sessions: SessionsUrl[];
+	sessions: SessionSearchData[];
 }
 
 export interface SessionInterface {
@@ -70,6 +71,7 @@ export interface SessionData {
 	id: number;
 	url: string;
 	events: SessionEvents;
+	recordedAt: Date;
 }
 
 export interface Predicate {

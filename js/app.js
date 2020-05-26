@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -23,7 +24,8 @@ const options_definitions = [
     { name: 'rsa-private-key', type: String },
     { name: 'logs' },
     { name: 'screenshots' },
-    { name: 'video' }
+    { name: 'video' },
+    { name: 'all-time' }
 ];
 console_stamp(console, 'HH:MM:ss.l');
 class SessionsTool {
@@ -35,6 +37,10 @@ class SessionsTool {
             }
             const predicates = helpers_1.makeProjectPredicates(options);
             const sessions = yield helpers_1.sessions(predicates, options);
+            if (sessions.length === 0) {
+                console.log("No new sessions found");
+                return;
+            }
             if (options.contains('logs')) {
                 yield logs_1.logs(sessions, options);
             }
