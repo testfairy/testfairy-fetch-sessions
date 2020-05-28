@@ -59,7 +59,7 @@ const convert = (data, rsa) => {
         const recordedAt = new Date(data.recordedAt);
         recordedAt.setTime(data.recordedAt.getTime() + logTs);
         const mmss = recordedAt.toISOString();
-        return `${mmss} ${log.level}/${log.tag} ${log.text}`.trim();
+        return `${mmss} ${log.level}/${log.tag}: ${log.text}`.trim();
     }).join("\n");
     return output;
 };
