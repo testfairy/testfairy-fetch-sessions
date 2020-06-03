@@ -25,7 +25,8 @@ const options_definitions = [
     { name: 'logs' },
     { name: 'screenshots' },
     { name: 'video' },
-    { name: 'all-time' }
+    { name: 'all-time' },
+    { name: 'prepend-attributes' },
 ];
 console_stamp(console, 'HH:MM:ss.l');
 class SessionsTool {
