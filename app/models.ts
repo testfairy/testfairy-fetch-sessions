@@ -4,12 +4,22 @@ const commandline_args = require('command-line-args');
 
 export interface Auth {
 	user: string;
-	pass: string
+	pass: string;
 }
 
 export interface SessionSearchData {
 	url: string;
-	recorded_at: string
+	app_name: string;
+	app_version: string;
+	app_version_code: string;
+	attributes4: string[];
+	email: string;
+	device_maker: string;
+	device_model: string;
+	ip: string;
+	os_version: string;
+	platform: number;
+	recorded_at: string;
 }
 
 export interface SessionsSearchResponse {
@@ -72,6 +82,16 @@ export interface SessionData {
 	url: string;
 	events: SessionEvents;
 	recordedAt: Date;
+	appName: string;
+	appVersion: string;
+	appVersionCode: string;
+	attributes: string[];
+	deviceMaker: string;
+	deviceModel: string;
+	ipAddress: string;
+	osVersion: string;
+	platform: string;
+	userId: string;
 }
 
 export interface Predicate {

@@ -91,7 +91,7 @@ const searchSessions = (predicates, options) => __awaiter(void 0, void 0, void 0
         let option = Object.assign(Object.assign({}, httpOptions), {
             form: {
                 "predicates": JSON.stringify(predicates),
-                "fields": "url,recorded_at"
+                "fields": "url,recorded_at,app_name,app_version,app_version_code,attributes4,device_maker,device_model,ip,os_version,email"
             }
         });
         const callback = (error, response, body) => {
@@ -123,7 +123,7 @@ const fetchSessionData = (session, options) => __awaiter(void 0, void 0, void 0,
             else {
                 try {
                     const response = JSON.parse(body.toString());
-                    const data = Object.assign(Object.assign({}, response.session), { url: session.url, recordedAt: new Date(session.recorded_at) });
+                    const data = Object.assign(Object.assign({}, response.session), { url: session.url, recordedAt: new Date(session.recorded_at), appName: session.app_name, appVersion: session.app_version, appVersionCode: session.app_version_code, attributes: session.attributes4, userId: session.email, deviceMaker: session.device_maker, deviceModel: session.device_model, ipAddress: session.ip, osVersion: session.os_version, platform: session.platform == 0 ? "Android" : "iOS" });
                     resolve(data);
                 }
                 catch (exception) {

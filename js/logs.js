@@ -41,7 +41,7 @@ const save = (log, logFilePath, dirPath) => {
     console.log(`Saving session log to ${logFilePath}`);
     fs.writeFileSync(logFilePath, log);
 };
-const convert = (data, rsa) => {
+const convert = (data, rsa, options) => {
     if (!data || !data.events) {
         return null;
     }
@@ -54,12 +54,27 @@ const convert = (data, rsa) => {
         const aes = new aes_encryption_1.AESEncryption(keyDecrypt, ivDecrypt);
         logs.forEach(log => log.text = aes.decryptString(log.text));
     }
+    let logPrefix = "";
+    if (options.contains("prepend-attributes")) {
+        const attributes = {};
+        data.events.meta
+            .filter(meta => meta.type === 20)
+            .forEach((attribute) => {
+            Object.keys(attribute)
+                .filter(key => ["ts", "type"].indexOf(key) < 0)
+                .forEach((key) => {
+                attributes[key] = attribute[key];
+            });
+        });
+        const metadata = Object.assign({ "user.id": data.userId, "session.timestamp": data.recordedAt.toISOString(), "session.url": `https://${options.endpoint()}${data.url}`, "session.ipAddress": data.ipAddress, "device.os": data.platform, "device.model": data.deviceModel, "device.osVersion": data.osVersion, "app.name": data.appName, "app.version": data.appVersion }, attributes);
+        logPrefix = `${JSON.stringify(metadata)} `;
+    }
     const output = logs.map(log => {
         const logTs = Math.max(0, log.ts);
         const recordedAt = new Date(data.recordedAt);
         recordedAt.setTime(data.recordedAt.getTime() + logTs);
         const mmss = recordedAt.toISOString();
-        return `${mmss} ${log.level}/${log.tag}: ${log.text}`.trim();
+        return `${logPrefix}${mmss} ${log.level}/${log.tag}: ${log.text}`.trim();
     }).join("\n");
     return output;
 };
@@ -71,9 +86,10 @@ exports.logs = (sessions, options) => __awaiter(void 0, void 0, void 0, function
         const logFilePath = `${dirPath}/session.log`;
         if (fs.existsSync(logFilePath)) {
             console.log(logFilePath + " already exists");
+            // fs.unlinkSync(logFilePath);
             return;
         }
-        const logs = convert(session, encrypt);
+        const logs = convert(session, encrypt, options);
         save(logs, logFilePath, dirPath);
     });
 });
