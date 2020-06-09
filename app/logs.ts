@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { Options, SessionData, AesKeyMeta } from "./models";
+import { Options, SessionData, AesKeyMeta, Log } from "./models";
 import { getRsaEncryptionKey } from "./helpers";
 import { AESEncryption } from './aes-encryption';
 
@@ -27,8 +27,7 @@ const convert = (data: SessionData, rsa: any, options: Options): string | null =
 		logs.forEach(log => log.text = aes.decryptString(log.text));
 	}
 
-	let logPrefix = "";
-	if (options.contains("prepend-attributes")) {
+	if (options.contains("json")) {
 		const attributes: any = {};
 		data.events.meta
 			.filter(meta => meta.type === 20)
@@ -51,19 +50,34 @@ const convert = (data: SessionData, rsa: any, options: Options): string | null =
 			"app.name": data.appName,
 			"app.version": data.appVersion,
 			...attributes,
-		}
-		logPrefix = `${JSON.stringify(metadata)} `;
-	}
+		};
 
-	const output = logs.map(log => {
-		const logTs = Math.max(0, log.ts);
-		const recordedAt = new Date(data.recordedAt);
-		recordedAt.setTime(data.recordedAt.getTime() + logTs);
-		const mmss = recordedAt.toISOString();
-		return `${logPrefix}${mmss} ${log.level}/${log.tag}: ${log.text}`.trim();
-	}).join("\n");
-	return output;
-}
+		return logs.map(log => {
+			const recordedAt = getTimestamp(log, data.recordedAt);
+			return JSON.stringify({
+				tag: log.tag,
+				timestamp: recordedAt.toISOString(),
+				severity: log.level,
+				message: log.text,
+				attributes: metadata
+			});
+		}).join("\n");
+	} else {
+		return logs.map(log => {
+			const recordedAt = getTimestamp(log, data.recordedAt);
+			const mmss = recordedAt.toISOString();
+			return `${mmss} ${log.level}/${log.tag}: ${log.text}`.trim();
+		}).join("\n");
+	}
+};
+
+const getTimestamp = (log: Log, recordedAt: Date) => {
+	const logTs = Math.max(0, log.ts);
+	const timestamp = new Date(recordedAt);
+	timestamp.setTime(recordedAt.getTime() + logTs);
+
+	return timestamp;
+};
 
 export const logs = async (sessions: SessionData[], options: Options) => {
 	const rootPath = "testfairy-sessions";
@@ -74,12 +88,14 @@ export const logs = async (sessions: SessionData[], options: Options) => {
 		const logFilePath = `${dirPath}/session.log`;
 
 		if (fs.existsSync(logFilePath)) {
-			console.log(logFilePath + " already exists");
-			// fs.unlinkSync(logFilePath);
-			return;
+			if (!options.contains("overwrite")) {
+				console.log(logFilePath + " already exists.");
+				return;
+			}
+			fs.unlinkSync(logFilePath);
 		}
 
 		const logs = convert(session, encrypt, options);
 		save(logs, logFilePath, dirPath);
 	});
-}
+};

@@ -54,8 +54,7 @@ const convert = (data, rsa, options) => {
         const aes = new aes_encryption_1.AESEncryption(keyDecrypt, ivDecrypt);
         logs.forEach(log => log.text = aes.decryptString(log.text));
     }
-    let logPrefix = "";
-    if (options.contains("prepend-attributes")) {
+    if (options.contains("json")) {
         const attributes = {};
         data.events.meta
             .filter(meta => meta.type === 20)
@@ -67,16 +66,30 @@ const convert = (data, rsa, options) => {
             });
         });
         const metadata = Object.assign({ "user.id": data.userId, "session.timestamp": data.recordedAt.toISOString(), "session.url": `https://${options.endpoint()}${data.url}`, "session.ipAddress": data.ipAddress, "device.os": data.platform, "device.model": data.deviceModel, "device.osVersion": data.osVersion, "app.name": data.appName, "app.version": data.appVersion }, attributes);
-        logPrefix = `${JSON.stringify(metadata)} `;
+        return logs.map(log => {
+            const recordedAt = getTimestamp(log, data.recordedAt);
+            return JSON.stringify({
+                tag: log.tag,
+                timestamp: recordedAt.toISOString(),
+                severity: log.level,
+                message: log.text,
+                attributes: metadata
+            });
+        }).join("\n");
     }
-    const output = logs.map(log => {
-        const logTs = Math.max(0, log.ts);
-        const recordedAt = new Date(data.recordedAt);
-        recordedAt.setTime(data.recordedAt.getTime() + logTs);
-        const mmss = recordedAt.toISOString();
-        return `${logPrefix}${mmss} ${log.level}/${log.tag}: ${log.text}`.trim();
-    }).join("\n");
-    return output;
+    else {
+        return logs.map(log => {
+            const recordedAt = getTimestamp(log, data.recordedAt);
+            const mmss = recordedAt.toISOString();
+            return `${mmss} ${log.level}/${log.tag}: ${log.text}`.trim();
+        }).join("\n");
+    }
+};
+const getTimestamp = (log, recordedAt) => {
+    const logTs = Math.max(0, log.ts);
+    const timestamp = new Date(recordedAt);
+    timestamp.setTime(recordedAt.getTime() + logTs);
+    return timestamp;
 };
 exports.logs = (sessions, options) => __awaiter(void 0, void 0, void 0, function* () {
     const rootPath = "testfairy-sessions";
@@ -85,9 +98,11 @@ exports.logs = (sessions, options) => __awaiter(void 0, void 0, void 0, function
         const dirPath = rootPath + session.url;
         const logFilePath = `${dirPath}/session.log`;
         if (fs.existsSync(logFilePath)) {
-            console.log(logFilePath + " already exists");
-            // fs.unlinkSync(logFilePath);
-            return;
+            if (!options.contains("overwrite")) {
+                console.log(logFilePath + " already exists.");
+                return;
+            }
+            fs.unlinkSync(logFilePath);
         }
         const logs = convert(session, encrypt, options);
         save(logs, logFilePath, dirPath);

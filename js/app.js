@@ -26,7 +26,8 @@ const options_definitions = [
     { name: 'screenshots' },
     { name: 'video' },
     { name: 'all-time' },
-    { name: 'prepend-attributes' },
+    { name: 'json' },
+    { name: 'overwrite' },
 ];
 console_stamp(console, 'HH:MM:ss.l');
 class SessionsTool {
