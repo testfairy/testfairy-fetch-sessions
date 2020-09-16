@@ -17,14 +17,16 @@ const convert = (data: SessionData, rsa: any, options: Options): string | null =
 	if (!data || !data.events) { return null; }
 
 	let logs = data.events.encryptedLogs || data.events.logs || [];
-	const key = data.events.meta.find(meta => meta.type === 28);
-	if (data.events.encryptedLogs && rsa && key) {
-		const aesKey = key as AesKeyMeta;
-		const keyDecrypt = rsa.decrypt(aesKey.aesKey, "utf8");
-		const ivDecrypt = rsa.decrypt(aesKey.aesIv, "utf8");
-		const aes = new AESEncryption(keyDecrypt, ivDecrypt);
+	if (data.events.encryptedLogs && rsa) {
+		const key = data.events.meta.find(meta => meta.type === 28);
+		if (key) {
+			const aesKey = key as AesKeyMeta;
+			const keyDecrypt = rsa.decrypt(aesKey.aesKey, "utf8");
+			const ivDecrypt = rsa.decrypt(aesKey.aesIv, "utf8");
+			const aes = new AESEncryption(keyDecrypt, ivDecrypt);
 
-		logs.forEach(log => log.text = aes.decryptString(log.text));
+			logs.forEach(log => log.text = aes.decryptString(log.text));
+		}
 	}
 
 	if (options.contains("json")) {

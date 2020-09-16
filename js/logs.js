@@ -46,13 +46,15 @@ const convert = (data, rsa, options) => {
         return null;
     }
     let logs = data.events.encryptedLogs || data.events.logs || [];
-    const key = data.events.meta.find(meta => meta.type === 28);
-    if (data.events.encryptedLogs && rsa && key) {
-        const aesKey = key;
-        const keyDecrypt = rsa.decrypt(aesKey.aesKey, "utf8");
-        const ivDecrypt = rsa.decrypt(aesKey.aesIv, "utf8");
-        const aes = new aes_encryption_1.AESEncryption(keyDecrypt, ivDecrypt);
-        logs.forEach(log => log.text = aes.decryptString(log.text));
+    if (data.events.encryptedLogs && rsa) {
+        const key = data.events.meta.find(meta => meta.type === 28);
+        if (key) {
+            const aesKey = key;
+            const keyDecrypt = rsa.decrypt(aesKey.aesKey, "utf8");
+            const ivDecrypt = rsa.decrypt(aesKey.aesIv, "utf8");
+            const aes = new aes_encryption_1.AESEncryption(keyDecrypt, ivDecrypt);
+            logs.forEach(log => log.text = aes.decryptString(log.text));
+        }
     }
     if (options.contains("json")) {
         const attributes = {};
