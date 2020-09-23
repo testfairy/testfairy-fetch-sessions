@@ -76,6 +76,7 @@ const searchSessions = async (predicates: any[], options: Options): Promise<Sess
 		let option = {
 			...httpOptions, ...{
 				form: {
+					"per_page": 1000,
 					"predicates": JSON.stringify(predicates),
 					"fields": "url,recorded_at,app_name,app_version,app_version_code,attributes4,device_maker,device_model,ip,os_version,email"
 				}
@@ -136,9 +137,11 @@ const fetchSessionData = async (session: SessionSearchData, options: Options): P
 
 export const sessions = async (predicates: any[], options: Options): Promise<SessionData[]> => {
 	const sessionData: any = await searchSessions(predicates, options);
+	console.log("Found " + sessionData.sessions.length + " sessions, now fetching contents");
 	const events = sessionData.sessions.map((session: SessionSearchData) => {
 		return fetchSessionData(session, options)
 	});
 
 	return Promise.all(events);
 }
+

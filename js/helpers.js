@@ -77,6 +77,7 @@ const searchSessions = (predicates, options) => __awaiter(void 0, void 0, void 0
         const httpOptions = { auth };
         let option = Object.assign(Object.assign({}, httpOptions), {
             form: {
+                "per_page": 1000,
                 "predicates": JSON.stringify(predicates),
                 "fields": "url,recorded_at,app_name,app_version,app_version_code,attributes4,device_maker,device_model,ip,os_version,email"
             }
@@ -122,6 +123,7 @@ const fetchSessionData = (session, options) => __awaiter(void 0, void 0, void 0,
 });
 exports.sessions = (predicates, options) => __awaiter(void 0, void 0, void 0, function* () {
     const sessionData = yield searchSessions(predicates, options);
+    console.log("Found " + sessionData.sessions.length + " sessions, now fetching contents");
     const events = sessionData.sessions.map((session) => {
         return fetchSessionData(session, options);
     });

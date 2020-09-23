@@ -64,7 +64,7 @@ class SessionsTool {
 	}
 
 	version() {
-		console.log("fetch-sessions-tool version 1.3.0");
+		console.log("fetch-sessions-tool version 1.3.1");
 	}
 }
 

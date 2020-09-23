@@ -67,7 +67,7 @@ class SessionsTool {
         console.log("sessions with your own toolchain or to import to your own analytics systems.");
     }
     version() {
-        console.log("fetch-sessions-tool version 1.3.0");
+        console.log("fetch-sessions-tool version 1.3.1");
     }
 }
 const tool = new SessionsTool();
