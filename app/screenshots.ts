@@ -9,13 +9,13 @@ const formatTimestamp = (ts: number): string => {
 	return sprintf("%07.3f", ts); // 7 includes the point and 3
 };
 
-const downloadImage = (data: DownloadedSessionScreenshot): Promise<DownloadedSessionScreenshot> => {
+const downloadImage = (data: DownloadedSessionScreenshot, options: Options): Promise<DownloadedSessionScreenshot> => {
 	return new Promise((resolve, reject) => {
 		if (fs.existsSync(data.filePath)) {
 			console.log(data.filePath + " already exists");
 			resolve(data);
 		} else {
-			const imageDownloader = new ImageDownloader();
+			const imageDownloader = new ImageDownloader(options);
 			imageDownloader.download(data, (error) => {
 				if (error) {
 					reject(error);
@@ -27,7 +27,7 @@ const downloadImage = (data: DownloadedSessionScreenshot): Promise<DownloadedSes
 	});
 };
 
-const downloadImages = (data: SessionData, callback: ScreenshotCallbackCommand) => {
+const downloadImages = (data: SessionData, options: Options, callback: ScreenshotCallbackCommand) => {
 	if (!data || !data.events) { return Promise.resolve([]); }
 	const events = data.events.screenshotEvents || [];
 	const rootPath = "testfairy-sessions";
@@ -46,7 +46,7 @@ const downloadImages = (data: SessionData, callback: ScreenshotCallbackCommand) 
 			totalImages: events.length
 		};
 
-		return downloadImage(download)
+		return downloadImage(download, options)
 			.then((item: DownloadedSessionScreenshot) => callback.onDownload(item))
 			.catch((error: Error) => callback.onDownload(undefined, error));
 	});
@@ -56,7 +56,7 @@ const downloadImages = (data: SessionData, callback: ScreenshotCallbackCommand) 
 export const screenshots = async (sessions: SessionData[], options: Options) => {
 	const callback = options.contains('video') ? new Video() : new NoOp();
 	const downloads = sessions
-		.map(session => downloadImages(session, callback)).filter(promise => promise != null);
+		.map(session => downloadImages(session, options, callback)).filter(promise => promise != null);
 
 	await Promise.all(downloads);
 }

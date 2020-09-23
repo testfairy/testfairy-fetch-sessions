@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Options = void 0;
 const helpers_1 = require("./helpers");
+const http = require("https");
 const commandline_args = require('command-line-args');
 class Options {
     constructor(definitions) {
         this.options = commandline_args(definitions);
+        this.agent = new http.Agent({ maxSockets: 5 });
     }
     containsHelp() {
         return helpers_1.isEmpty(this.options) || this.options.help;
