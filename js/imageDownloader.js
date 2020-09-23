@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ImageDownloader = void 0;
 const http = require("https");
 const url = require("url");
 const fs = require("fs");

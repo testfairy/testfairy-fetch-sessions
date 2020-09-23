@@ -62,7 +62,8 @@ export class Video implements ScreenshotCallbackCommand {
 			return;
 		}
 
-		console.log(`All ${downloads.length} images for ${session} have been downloaded. Creating video ${filename}`);
+		console.log(`All ${downloads.length} images for ${session} have been downloaded.`);
+		console.log(`Creating video ${filename}`);
 
 		const command = `${ffmpeg.path} -r 1 -pattern_type glob -i '${filesPath}/*.jpg' -c:v libx264 ${filename}`;
 		exec.exec(command, (err, stdout, stderr) => {

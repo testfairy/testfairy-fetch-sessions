@@ -8,6 +8,7 @@ const console_stamp = require('console-stamp');
 
 const options_definitions = [
 	{name: 'help', alias: 'h', type: Boolean},
+	{name: 'version', alias: 'v', type: Boolean},
 	{name: 'project-id', type: Number},
 	{name: 'user', type: String},
 	{name: 'api-key', type: String},
@@ -21,15 +22,22 @@ const options_definitions = [
 	{name: 'overwrite'},
 ];
 
-console_stamp(console, 'HH:MM:ss.l');
-
 class SessionsTool {
 	async run() {
 		const options = new Options(options_definitions);
 		if (options.containsHelp()) {
 			this.help();
+			return;
 		}
 
+		if (options.containsVersion()) {
+			this.version();
+			return;
+		}
+
+		console_stamp(console, 'HH:MM:ss.l');
+
+		console.log("Fetching new sessions...");
 		const predicates = makeProjectPredicates(options);
 		const sessions = await fetchSessions(predicates, options);
 		if (sessions.length === 0) {
@@ -38,10 +46,12 @@ class SessionsTool {
 		}
 
 		if (options.contains('logs')) {
+			console.log("Fetching logs");
 			await logs(sessions, options);
 		}
 
 		if (options.contains('screenshots') || options.contains('video')) {
+			console.log("Fetching session screenshots");
 			await screenshots(sessions, options);
 		}
 	}
@@ -51,9 +61,13 @@ class SessionsTool {
 		console.log("");
 		console.log("This tool downloads screenshots and/or logs from recorded TestFairy sessions. Use this to download data to analyze");
 		console.log("sessions with your own toolchain or to import to your own analytics systems.");
-		process.exit(1);
+	}
+
+	version() {
+		console.log("fetch-sessions-tool version 1.3.0");
 	}
 }
 
 const tool = new SessionsTool();
 tool.run().catch((error: Error) => { console.error(error.message); tool.help(); })
+

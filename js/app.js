@@ -17,6 +17,7 @@ const screenshots_1 = require("./screenshots");
 const console_stamp = require('console-stamp');
 const options_definitions = [
     { name: 'help', alias: 'h', type: Boolean },
+    { name: 'version', alias: 'v', type: Boolean },
     { name: 'project-id', type: Number },
     { name: 'user', type: String },
     { name: 'api-key', type: String },
@@ -29,14 +30,20 @@ const options_definitions = [
     { name: 'json' },
     { name: 'overwrite' },
 ];
-console_stamp(console, 'HH:MM:ss.l');
 class SessionsTool {
     run() {
         return __awaiter(this, void 0, void 0, function* () {
             const options = new models_1.Options(options_definitions);
             if (options.containsHelp()) {
                 this.help();
+                return;
             }
+            if (options.containsVersion()) {
+                this.version();
+                return;
+            }
+            console_stamp(console, 'HH:MM:ss.l');
+            console.log("Fetching new sessions...");
             const predicates = helpers_1.makeProjectPredicates(options);
             const sessions = yield helpers_1.sessions(predicates, options);
             if (sessions.length === 0) {
@@ -44,9 +51,11 @@ class SessionsTool {
                 return;
             }
             if (options.contains('logs')) {
+                console.log("Fetching logs");
                 yield logs_1.logs(sessions, options);
             }
             if (options.contains('screenshots') || options.contains('video')) {
+                console.log("Fetching session screenshots");
                 yield screenshots_1.screenshots(sessions, options);
             }
         });
@@ -56,7 +65,9 @@ class SessionsTool {
         console.log("");
         console.log("This tool downloads screenshots and/or logs from recorded TestFairy sessions. Use this to download data to analyze");
         console.log("sessions with your own toolchain or to import to your own analytics systems.");
-        process.exit(1);
+    }
+    version() {
+        console.log("fetch-sessions-tool version 1.3.0");
     }
 }
 const tool = new SessionsTool();

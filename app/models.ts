@@ -115,6 +115,10 @@ export class Options {
 		return isEmpty(this.options) || this.options.help;
 	}
 
+	containsVersion() {
+		return this.options.version;
+	}
+
 	contains(key: string) {
 		return this.options[key] !== undefined
 	}
