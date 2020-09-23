@@ -36,14 +36,14 @@ const sprintf = require('sprintf-js').sprintf;
 const formatTimestamp = (ts) => {
     return sprintf("%07.3f", ts); // 7 includes the point and 3
 };
-const downloadImage = (data) => {
+const downloadImage = (data, options) => {
     return new Promise((resolve, reject) => {
         if (fs.existsSync(data.filePath)) {
             console.log(data.filePath + " already exists");
             resolve(data);
         }
         else {
-            const imageDownloader = new imageDownloader_1.ImageDownloader();
+            const imageDownloader = new imageDownloader_1.ImageDownloader(options);
             imageDownloader.download(data, (error) => {
                 if (error) {
                     reject(error);
@@ -55,7 +55,7 @@ const downloadImage = (data) => {
         }
     });
 };
-const downloadImages = (data, callback) => {
+const downloadImages = (data, options, callback) => {
     if (!data || !data.events) {
         return Promise.resolve([]);
     }
@@ -74,7 +74,7 @@ const downloadImages = (data, callback) => {
             imageIndex: index,
             totalImages: events.length
         };
-        return downloadImage(download)
+        return downloadImage(download, options)
             .then((item) => callback.onDownload(item))
             .catch((error) => callback.onDownload(undefined, error));
     });
@@ -83,7 +83,7 @@ const downloadImages = (data, callback) => {
 exports.screenshots = (sessions, options) => __awaiter(void 0, void 0, void 0, function* () {
     const callback = options.contains('video') ? new screenshotCallback_1.Video() : new screenshotCallback_1.NoOp();
     const downloads = sessions
-        .map(session => downloadImages(session, callback)).filter(promise => promise != null);
+        .map(session => downloadImages(session, options, callback)).filter(promise => promise != null);
     yield Promise.all(downloads);
 });
 //# sourceMappingURL=screenshots.js.map

@@ -1,4 +1,5 @@
 import { isEmpty, assertNoMissingParams } from "./helpers";
+import http = require('https');
 
 const commandline_args = require('command-line-args');
 
@@ -103,8 +104,11 @@ export interface Predicate {
 
 export class Options {
 	private options: any;
+	public agent: http.Agent;
+
 	constructor(definitions: any[]) {
 		this.options = commandline_args(definitions);
+		this.agent = new http.Agent({ maxSockets: 5, keepAlive: true });
 	}
 
 	containsHelp() {

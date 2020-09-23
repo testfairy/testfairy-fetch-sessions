@@ -2,8 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImageDownloader = void 0;
 const http = require("https");
+const url = require("url");
 const fs = require("fs");
 class ImageDownloader {
+    constructor(options) {
+        this.options = options;
+    }
     download(download, callback) {
         const file = fs.createWriteStream(download.filePath);
         file.on('error', (error) => {
@@ -13,7 +17,9 @@ class ImageDownloader {
             callback();
         });
         try {
-            http.get(download.url, (res) => {
+            const parsedUrl = url.parse(download.url);
+            const options = Object.assign(Object.assign({}, parsedUrl), { agent: this.options.agent });
+            http.get(options, (res) => {
                 res.pipe(file);
             }).on('error', (error) => {
                 callback(error);
