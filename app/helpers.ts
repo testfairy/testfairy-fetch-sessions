@@ -137,6 +137,11 @@ const fetchSessionData = async (session: SessionSearchData, options: Options): P
 
 export const sessions = async (predicates: any[], options: Options): Promise<SessionData[]> => {
 	const sessionData: any = await searchSessions(predicates, options);
+
+	if (sessionData.status === 'fail') {
+		throw new Error(sessionData.message);
+	}
+
 	console.log("Found " + sessionData.sessions.length + " sessions, now fetching contents");
 	const events = sessionData.sessions.map((session: SessionSearchData) => {
 		return fetchSessionData(session, options)
