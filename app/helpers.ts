@@ -139,11 +139,7 @@ export const sessions = async (predicates: any[], options: Options): Promise<Ses
 	const sessionData: any = await searchSessions(predicates, options);
 
 	if (sessionData.status === 'fail') {
-		if (sessionData.code === 104) {
-			throw new Error(sessionData.message + "\nPlease check your api-key and try again\n");
-		} else {
-			throw new Error(sessionData.message);
-		}
+		throw new Error(sessionData.message);
 	}
 
 	console.log("Found " + sessionData.sessions.length + " sessions, now fetching contents");
