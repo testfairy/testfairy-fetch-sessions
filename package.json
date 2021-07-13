@@ -15,7 +15,7 @@
   "dependencies": {
     "aes-js": "^3.1.2",
     "command-line-args": "^5.1.1",
-    "console-stamp": "^0.2.7",
+    "console-stamp": "^3.0.2",
     "ffmpeg-static": "^2.4.0",
     "file-saver": "^2.0.1",
     "node-rsa": "^1.0.8",
@@ -25,9 +25,9 @@
   },
   "devDependencies": {
     "@types/command-line-args": "^5.0.0",
+    "@types/file-saver": "^2.0.0",
     "@types/node": "^11.13.0",
     "@types/request": "^2.48.1",
-    "@types/file-saver": "^2.0.0",
     "typescript": "^3.4.1"
   }
 }
