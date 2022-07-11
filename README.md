@@ -15,7 +15,7 @@ If you receive the error: "Could not create leading directories", then you shoul
 #### Usage
 
 ```
-testfairy-fetch-sessions --endpoint "acme.testfairy.com" --user "john@example.com" --api-key "0123456789abcdef" --project-id=1000 --logs --screenshots --video
+testfairy-fetch-sessions --endpoint "acme.testfairy.com" --user "john@example.com" --api-key "0123456789abcdef" --project-id 1000 --logs --screenshots --video
 ```
 
 The example above would connect to endpoint `acme.testfairy.com` (which be a private cloud installation, a public cloud installation, or an on-premise installation.) It will use the credentials of user and api-key.
