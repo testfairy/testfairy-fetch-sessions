@@ -6,6 +6,11 @@ import {DownloadedSessionScreenshot, Options} from "./models";
 export class ImageDownloader {
 	constructor(private options: Options) {}
 	download(download: DownloadedSessionScreenshot, callback:(error?:Error) => void) {
+		if (download.filePath === null) {
+			callback({name: "No file destination", message: "No file destination"});
+			return;
+		}
+
 		const file = fs.createWriteStream(download.filePath);
 		file.on('error', (error) => {
 			callback(error);

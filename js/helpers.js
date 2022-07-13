@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,14 +27,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sessions = exports.makeProjectPredicates = exports.assertNoMissingParams = exports.getRsaEncryptionKey = exports.isEmpty = exports.getEndpoint = void 0;
 const fs = __importStar(require("fs"));
 const request = require('request');
 const NodeRSA = require('node-rsa');
@@ -52,6 +65,13 @@ exports.assertNoMissingParams = (options, required) => {
         throw new Error("Must provide at least one of --logs, --screenshots or --video");
     }
 };
+const thisMonthString = () => {
+    const date = new Date();
+    const month = date.getUTCMonth() + 1;
+    const monthAsString = (month < 10) ? "0" + month.toString() : month.toString();
+    const year = date.getUTCFullYear();
+    return `${year}-${monthAsString}-01`;
+};
 exports.makeProjectPredicates = (options) => {
     const predicates = [{
             "type": "number",
@@ -60,11 +80,12 @@ exports.makeProjectPredicates = (options) => {
             "value": options.projectId()
         }];
     if (!options.contains('all-time')) {
+        const value = options.contains("this-month") ? thisMonthString() : "now-24h/h";
         predicates.push({
             "type": "date",
             "attribute": "recorded_at",
             "comparison": "gt",
-            "value": "now-24h/h"
+            value
         });
     }
     return predicates;
@@ -79,7 +100,7 @@ const searchSessions = (predicates, options) => __awaiter(void 0, void 0, void 0
             form: {
                 "per_page": 1000,
                 "predicates": JSON.stringify(predicates),
-                "fields": "url,recorded_at,app_name,app_version,app_version_code,attributes4,device_maker,device_model,ip,os_version,email"
+                "fields": "url,recorded_at,app_name,app_version,app_version_code,attributes4,device_maker,device_model,ip,os_version,email,device_screen_height,device_screen_width,platform"
             }
         });
         const callback = (error, response, body) => {
@@ -111,7 +132,7 @@ const fetchSessionData = (session, options) => __awaiter(void 0, void 0, void 0,
             else {
                 try {
                     const response = JSON.parse(body.toString());
-                    const data = Object.assign(Object.assign({}, response.session), { url: session.url, recordedAt: new Date(session.recorded_at), appName: session.app_name, appVersion: session.app_version, appVersionCode: session.app_version_code, attributes: session.attributes4, userId: session.email, deviceMaker: session.device_maker, deviceModel: session.device_model, ipAddress: session.ip, osVersion: session.os_version, platform: session.platform == 0 ? "Android" : "iOS" });
+                    const data = Object.assign(Object.assign({}, response.session), { url: session.url, recordedAt: new Date(session.recorded_at), appName: session.app_name, appVersion: session.app_version, appVersionCode: session.app_version_code, attributes: session.attributes4, userId: session.email, deviceMaker: session.device_maker, deviceModel: session.device_model, ipAddress: session.ip, osVersion: session.os_version, platform: session.platform, deviceScreenHeight: session.device_screen_height, deviceScreenWidth: session.device_screen_width });
                     resolve(data);
                 }
                 catch (exception) {
@@ -123,6 +144,9 @@ const fetchSessionData = (session, options) => __awaiter(void 0, void 0, void 0,
 });
 exports.sessions = (predicates, options) => __awaiter(void 0, void 0, void 0, function* () {
     const sessionData = yield searchSessions(predicates, options);
+    if (sessionData.status === 'fail') {
+        throw new Error(sessionData.message);
+    }
     console.log("Found " + sessionData.sessions.length + " sessions, now fetching contents");
     const events = sessionData.sessions.map((session) => {
         return fetchSessionData(session, options);

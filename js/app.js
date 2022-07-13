@@ -27,6 +27,8 @@ const options_definitions = [
     { name: 'screenshots' },
     { name: 'video' },
     { name: 'all-time' },
+    { name: 'this-month' },
+    { name: 'show-touches' },
     { name: 'json' },
     { name: 'overwrite' },
 ];

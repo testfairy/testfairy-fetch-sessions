@@ -45,6 +45,14 @@ export const assertNoMissingParams = (options: any, required: string[]) => {
 	}
 };
 
+const thisMonthString = () => {
+	const date = new Date();
+	const month = date.getUTCMonth() + 1;
+	const monthAsString = (month < 10) ? "0" + month.toString() : month.toString();
+	const year = date.getUTCFullYear();
+	return `${year}-${monthAsString}-01`;
+};
+
 export const makeProjectPredicates = (options: Options) => {
 	const predicates = [{
 		"type": "number",
@@ -54,11 +62,12 @@ export const makeProjectPredicates = (options: Options) => {
 	}];
 
 	if (!options.contains('all-time')) {
+		const value = options.contains("this-month") ? thisMonthString() : "now-24h/h";
 		predicates.push({
 			"type":"date",
 			"attribute":"recorded_at",
 			"comparison":"gt",
-			"value":"now-24h/h"
+			value
 		});
 	}
 
@@ -78,7 +87,7 @@ const searchSessions = async (predicates: any[], options: Options): Promise<Sess
 				form: {
 					"per_page": 1000,
 					"predicates": JSON.stringify(predicates),
-					"fields": "url,recorded_at,app_name,app_version,app_version_code,attributes4,device_maker,device_model,ip,os_version,email"
+					"fields": "url,recorded_at,app_name,app_version,app_version_code,attributes4,device_maker,device_model,ip,os_version,email,device_screen_height,device_screen_width,platform"
 				}
 			}
 		};
@@ -124,7 +133,9 @@ const fetchSessionData = async (session: SessionSearchData, options: Options): P
 						deviceModel: session.device_model,
 						ipAddress: session.ip,
 						osVersion: session.os_version,
-						platform: session.platform == 0 ? "Android" : "iOS",
+						platform: session.platform,
+						deviceScreenHeight: session.device_screen_height,
+						deviceScreenWidth: session.device_screen_width
 					};
 					resolve(data);
 				} catch (exception) {

@@ -17,6 +17,8 @@ export interface SessionSearchData {
 	email: string;
 	device_maker: string;
 	device_model: string;
+	device_screen_height: number;
+	device_screen_width: number;
 	ip: string;
 	os_version: string;
 	platform: number;
@@ -39,13 +41,15 @@ export interface SessionsResponse {
 }
 
 export interface DownloadedSessionScreenshot {
-	id: number
-	session: string,
-	url: string,
-	timestamp: number,
-	filePath: string,
-	imageIndex: number
-	totalImages: number
+	id: number;
+	session: string;
+	url: string;
+	timestamp: number;
+	filePath: string | null;
+	imageIndex: number;
+	totalImages: number;
+	width: number;
+	height: number;
 }
 
 export interface Meta {
@@ -69,6 +73,16 @@ export interface Log {
 export interface ScreenshotEvent {
 	ts: number;
 	url: string;
+	w: number;
+	h: number;
+}
+
+export interface InputEvent {
+	acct: number;
+	t: number;
+	ts: number;
+	x: number;
+	y: number;
 }
 
 export interface SessionEvents {
@@ -76,6 +90,7 @@ export interface SessionEvents {
 	encryptedLogs: Log[];
 	meta: Meta[];
 	screenshotEvents: ScreenshotEvent[];
+	inputEvents: InputEvent[];
 }
 
 export interface SessionData {
@@ -91,8 +106,10 @@ export interface SessionData {
 	deviceModel: string;
 	ipAddress: string;
 	osVersion: string;
-	platform: string;
+	platform: number;
 	userId: string;
+	deviceScreenHeight: number;
+	deviceScreenWidth: number;
 }
 
 export interface Predicate {

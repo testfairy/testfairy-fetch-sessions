@@ -11,7 +11,10 @@ const formatTimestamp = (ts: number): string => {
 
 const downloadImage = (data: DownloadedSessionScreenshot, options: Options): Promise<DownloadedSessionScreenshot> => {
 	return new Promise((resolve, reject) => {
-		if (fs.existsSync(data.filePath)) {
+		if (data.filePath === null) {
+			console.log(data.id + " has no destination file");
+			resolve(data);
+		} else if (data.filePath !== null && fs.existsSync(data.filePath)) {
 			console.log(data.filePath + " already exists");
 			resolve(data);
 		} else {
@@ -27,14 +30,14 @@ const downloadImage = (data: DownloadedSessionScreenshot, options: Options): Pro
 	});
 };
 
-const downloadImages = (data: SessionData, options: Options, callback: ScreenshotCallbackCommand) => {
+const downloadImages = async (data: SessionData, options: Options) => {
 	if (!data || !data.events) { return Promise.resolve([]); }
-	const events = data.events.screenshotEvents || [];
+	const screenshots = data.events.screenshotEvents || [];
 	const rootPath = "testfairy-sessions";
 	const dirPath = rootPath + data.url;
 	fs.mkdirSync(dirPath, {recursive: true});
 
-	const downloads = events.map((event: ScreenshotEvent, index: number) => {
+	const downloads = screenshots.map(async (event: ScreenshotEvent, index: number) => {
 		const filePath = dirPath + "/" + formatTimestamp(event.ts) + ".jpg";
 		const download: DownloadedSessionScreenshot = {
 			id: data.id,
@@ -43,20 +46,35 @@ const downloadImages = (data: SessionData, options: Options, callback: Screensho
 			timestamp: event.ts,
 			filePath: filePath,
 			imageIndex: index,
-			totalImages: events.length
+			totalImages: screenshots.length,
+			width: event.w,
+			height: event.h,
 		};
 
-		return downloadImage(download, options)
-			.then((item: DownloadedSessionScreenshot) => callback.onDownload(item))
-			.catch((error: Error) => callback.onDownload(undefined, error));
+		try {
+			await downloadImage(download, options);
+		} catch {
+			console.log(`Failed to download screenshot ${index} from session ${data.id}`);
+			download.filePath = null;
+		}
+
+		return download;
 	});
 
 	return Promise.all(downloads);
 }
+
 export const screenshots = async (sessions: SessionData[], options: Options) => {
-	const callback = options.contains('video') ? new Video() : new NoOp();
+	const callback = options.contains('video') ? new Video(options) : new NoOp();
 	const downloads = sessions
-		.map(session => downloadImages(session, options, callback)).filter(promise => promise != null);
+		.map(async (session) => {
+			const downloaded = await downloadImages(session, options);
+			return {downloaded, session};
+		})
+		.map(async (promise) => {
+			const {downloaded, session} = await promise;
+			return await callback.onDownload(downloaded, session);
+		})
 
 	await Promise.all(downloads);
 }

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ImageDownloader = void 0;
 const http = require("https");
 const url = require("url");
 const fs = require("fs");
@@ -8,6 +9,10 @@ class ImageDownloader {
         this.options = options;
     }
     download(download, callback) {
+        if (download.filePath === null) {
+            callback({ name: "No file destination", message: "No file destination" });
+            return;
+        }
         const file = fs.createWriteStream(download.filePath);
         file.on('error', (error) => {
             callback(error);
