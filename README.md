@@ -28,6 +28,10 @@ If your logs are encrypted, you can download encrypted logs with the argument `-
 
 TestFairy Fetch Sessions tool is incremental in downloads. This means that you can run the tool multiple times, and it will only download new sessions that were recorded.
 
+### Notes
+
+There is a known issue on M1 Macs which causes errors from some of the libraries we're depending on. The only known workaround is to install some required libraries from homebrew `brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman` and then run npm install on the M1 machine which will build those dependecies from source. We apologize for the inconvenience, and are looking for way to improve this experience. 
+
 #### Support
 
 Got a question? We're always eager to help. We're available at <a href="mailto:support@testfairy.com">support@testfairy.com</a>.
