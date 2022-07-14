@@ -14,7 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "aes-js": "^3.1.2",
-    "canvas": "^2.8.0",
+    "canvas": "^2.9.3",
     "command-line-args": "^5.1.1",
     "console-stamp": "^3.0.2",
     "ffmpeg-static": "^5.0.2",

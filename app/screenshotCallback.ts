@@ -77,7 +77,7 @@ export class Video implements ScreenshotCallbackCommand {
 		console.log(`All ${downloads.length} images for ${session} have been downloaded.`);
 		console.log(`Creating video ${filename}.mp4`);
 
-		const command = `${ffmpeg.path} -r 1 -pattern_type glob -i '${filesPath}/*.jpg' -c:v libx264 ${filename}.mp4`;
+		const command = `${ffmpeg} -r 1 -pattern_type glob -i '${filesPath}/*.jpg' -c:v libx264 ${filename}.mp4`;
 		exec.exec(command, (err, stdout, stderr) => {
 			if (err) {
 				console.log(`ffmpeg:stdout: ${stdout}`);
@@ -300,7 +300,7 @@ export class Video implements ScreenshotCallbackCommand {
 		}
 		fs.writeFileSync(ffmpegInputFile, durationFile);
 
-		const command = `${ffmpeg.path} -f concat -safe 0 -i ${ffmpegInputFile} -vf showinfo -b:v 1000K ${output}.mp4`;
+		const command = `${ffmpeg} -f concat -safe 0 -i ${ffmpegInputFile} -vf showinfo -b:v 1000K ${output}.mp4`;
 		exec.exec(command, (err, stdout, stderr) => {
 			if (err) {
 				console.log(`ffmpeg:stdout: ${stdout}`);

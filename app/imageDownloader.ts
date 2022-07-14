@@ -5,7 +5,7 @@ import {DownloadedSessionScreenshot, Options} from "./models";
 
 export class ImageDownloader {
 	constructor(private options: Options) {}
-	download(download: DownloadedSessionScreenshot, callback:(error?:Error) => void) {
+	download(download: DownloadedSessionScreenshot, callback:(error?:Error | any) => void) {
 		if (download.filePath === null) {
 			callback({name: "No file destination", message: "No file destination"});
 			return;
@@ -21,7 +21,7 @@ export class ImageDownloader {
 
 		try {
 			const parsedUrl = url.parse(download.url);
-			const options: http.RequestOptions = { ...parsedUrl, agent: this.options.agent };
+			const options: http.RequestOptions = { ...parsedUrl, agent: this.options.agent, rejectUnauthorized: false};
 			http.get(options, (res:any) => {
 				res.pipe(file);
 			}).on('error', (error) => {

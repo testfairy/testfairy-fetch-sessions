@@ -22,7 +22,7 @@ class ImageDownloader {
         });
         try {
             const parsedUrl = url.parse(download.url);
-            const options = Object.assign(Object.assign({}, parsedUrl), { agent: this.options.agent });
+            const options = Object.assign(Object.assign({}, parsedUrl), { agent: this.options.agent, rejectUnauthorized: false });
             http.get(options, (res) => {
                 res.pipe(file);
             }).on('error', (error) => {
