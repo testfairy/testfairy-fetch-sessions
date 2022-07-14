@@ -32,6 +32,14 @@ TestFairy Fetch Sessions tool is incremental in downloads. This means that you c
 
 There is a known issue on M1 Macs which causes errors from some of the libraries we're depending on. The only known workaround is to install some required libraries from homebrew `brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman` and then run npm install on the M1 machine which will build those dependecies from source. We apologize for the inconvenience, and are looking for way to improve this experience. 
 
+```
+# brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman
+# git clone https://github.com/testfairy/testfairy-fetch-sessions.git
+# cd testfairy-fetch-sessions
+# npm install
+# node index.js --endpoint "acme.testfairy.com" --user "john@example.com" --api-key "0123456789abcdef" --project-id 1000 --logs --screenshots --video
+```
+
 #### Support
 
 Got a question? We're always eager to help. We're available at <a href="mailto:support@testfairy.com">support@testfairy.com</a>.
